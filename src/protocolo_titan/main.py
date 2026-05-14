@@ -1,17 +1,38 @@
 from pathlib import Path
+import sys
 
-from .config import GSMConfig, ConvoyScenario, CampScenario, AnalyzerConfig
-from .radio_access import gsm_access_summary
-from .scenario_a import analyze_convoy_mobility, analyze_convoy_fading
-from .scenario_b import analyze_camp_base
-from .plots import (
-    save_doppler_plot,
-    save_coherence_plot,
-    save_fading_plot,
-    save_reuse_plot,
-    save_noise_plot,
-)
-from .report import write_markdown_report
+# Support both direct execution and module execution
+try:
+    from .config import GSMConfig, ConvoyScenario, CampScenario, AnalyzerConfig
+    from .radio_access import gsm_access_summary
+    from .scenario_a import analyze_convoy_mobility, analyze_convoy_fading
+    from .scenario_b import analyze_camp_base
+    from .plots import (
+        save_doppler_plot,
+        save_coherence_plot,
+        save_fading_plot,
+        save_reuse_plot,
+        save_noise_plot,
+    )
+    from .report import write_markdown_report
+except ImportError:
+    # Add src to path for direct execution
+    src_path = Path(__file__).resolve().parent.parent
+    if str(src_path) not in sys.path:
+        sys.path.insert(0, str(src_path))
+    
+    from protocolo_titan.config import GSMConfig, ConvoyScenario, CampScenario, AnalyzerConfig
+    from protocolo_titan.radio_access import gsm_access_summary
+    from protocolo_titan.scenario_a import analyze_convoy_mobility, analyze_convoy_fading
+    from protocolo_titan.scenario_b import analyze_camp_base
+    from protocolo_titan.plots import (
+        save_doppler_plot,
+        save_coherence_plot,
+        save_fading_plot,
+        save_reuse_plot,
+        save_noise_plot,
+    )
+    from protocolo_titan.report import write_markdown_report
 
 
 def main() -> None:

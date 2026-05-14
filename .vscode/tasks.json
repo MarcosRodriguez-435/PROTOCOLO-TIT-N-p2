@@ -1,0 +1,59 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Ejecutar Protocolo Titán",
+            "type": "shell",
+            "command": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
+            "args": [
+                "${workspaceFolder}\\src\\protocolo_titan\\main.py"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "panel": "shared",
+                "focus": false
+            },
+            "problemMatcher": [
+                "$python"
+            ]
+        },
+        {
+            "label": "Dashboard Streamlit (Visualización)",
+            "type": "shell",
+            "command": "${workspaceFolder}\\.venv\\Scripts\\streamlit.exe",
+            "args": [
+                "run",
+                "${workspaceFolder}\\src\\protocolo_titan\\streamlit_app.py"
+            ],
+            "isBackground": true,
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "panel": "shared",
+                "focus": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Dashboard Web Premium (HTML)",
+            "type": "shell",
+            "command": "cmd",
+            "args": [
+                "/c",
+                "start",
+                "${workspaceFolder}\\dashboard_premium.html"
+            ],
+            "presentation": {
+                "echo": true,
+                "reveal": "silent",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        }
+    ]
+}

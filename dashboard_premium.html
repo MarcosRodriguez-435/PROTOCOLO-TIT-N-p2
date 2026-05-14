@@ -1,0 +1,1844 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Red Táctica GSM/EDGE - Centro de Mando</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es2015,es2017,es2020,es2021"></script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-dark: #0a0e1a;
+            --secondary-dark: #1a2847;
+            --tertiary-dark: #243759;
+            --cian-bright: #00d4ff;
+            --cian-subtle: #0099cc;
+            --white-pure: #ffffff;
+            --white-soft: #e8f1ff;
+            --blue-accent: #2563eb;
+            --grid-color: rgba(0, 212, 255, 0.05);
+            --border-color: rgba(0, 212, 255, 0.15);
+            --glow-color: rgba(0, 212, 255, 0.3);
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--primary-dark);
+            color: var(--white-soft);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Grid Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(0deg, var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.3;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at 20% 50%, rgba(37, 99, 235, 0.15) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ==================== NAVIGATION ==================== */
+        nav {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: linear-gradient(180deg, rgba(26, 40, 71, 0.8) 0%, rgba(10, 14, 26, 0.9) 100%);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--border-color);
+            padding: 2rem 1.5rem;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: inset -1px 0 0 var(--border-color);
+        }
+
+        .nav-header {
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .nav-logo {
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--cian-subtle);
+            opacity: 0.7;
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--white-pure);
+            letter-spacing: 0.5px;
+            line-height: 1.3;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin: 0.8rem 0;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            color: var(--white-soft);
+            text-decoration: none;
+            font-size: 14px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-left: 2px solid transparent;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--cian-bright);
+            border-left-color: var(--cian-bright);
+            transform: translateX(4px);
+        }
+
+        .nav-link.active {
+            background: rgba(0, 212, 255, 0.15);
+            color: var(--cian-bright);
+            border-left-color: var(--cian-bright);
+            font-weight: 600;
+        }
+
+        /* ==================== MAIN CONTENT ==================== */
+        main {
+            margin-left: 280px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* ==================== HERO SECTION ==================== */
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(10, 14, 26, 0.9) 0%, rgba(26, 40, 71, 0.5) 50%, rgba(10, 14, 26, 0.9) 100%);
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(0, 212, 255, 0.1) 0%, transparent 70%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.3; }
+        }
+
+        .hero-content {
+            text-align: center;
+            z-index: 3;
+            max-width: 900px;
+            padding: 0 2rem;
+            animation: fadeInUp 1.2s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            font-size: 12px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--cian-bright);
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--white-pure);
+            margin-bottom: 1rem;
+            letter-spacing: -1px;
+            line-height: 1.2;
+            background: linear-gradient(135deg, var(--white-pure) 0%, var(--cian-bright) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--white-soft);
+            opacity: 0.8;
+            margin-bottom: 2.5rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            font-weight: 300;
+            letter-spacing: 0.5px;
+        }
+
+        .hero-metrics {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .metric-box {
+            background: rgba(26, 40, 71, 0.4);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+            animation: slideInUp 0.8s ease-out both;
+        }
+
+        .metric-box:nth-child(1) { animation-delay: 0.1s; }
+        .metric-box:nth-child(2) { animation-delay: 0.2s; }
+        .metric-box:nth-child(3) { animation-delay: 0.3s; }
+        .metric-box:nth-child(4) { animation-delay: 0.4s; }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--cian-bright);
+            display: block;
+            margin-bottom: 0.3rem;
+        }
+
+        .metric-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--white-soft);
+            opacity: 0.7;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--cian-bright) 0%, var(--blue-accent) 100%);
+            color: var(--primary-dark);
+            box-shadow: 0 8px 24px rgba(0, 212, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(0, 212, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--cian-bright);
+            border: 1px solid var(--cian-bright);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(0, 212, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* ==================== SECTIONS ==================== */
+        section {
+            position: relative;
+            z-index: 2;
+            padding: 5rem 3rem;
+            margin: 0 auto;
+            max-width: 1400px;
+        }
+
+        section h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--white-pure);
+            letter-spacing: -0.5px;
+        }
+
+        section p {
+            font-size: 1rem;
+            line-height: 1.8;
+            color: var(--white-soft);
+            opacity: 0.9;
+            margin-bottom: 1rem;
+        }
+
+        /* ==================== INTRODUCTION SECTION ==================== */
+        .intro-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 3rem;
+        }
+
+        .card {
+            background: linear-gradient(135deg, rgba(26, 40, 71, 0.6) 0%, rgba(36, 55, 89, 0.4) 100%);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            border-color: var(--cian-bright);
+            background: linear-gradient(135deg, rgba(26, 40, 71, 0.8) 0%, rgba(36, 55, 89, 0.6) 100%);
+            box-shadow: 0 20px 40px rgba(0, 212, 255, 0.2);
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--white-pure);
+            margin-bottom: 0.8rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .card-text {
+            font-size: 0.95rem;
+            color: var(--white-soft);
+            opacity: 0.85;
+            line-height: 1.6;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* ==================== EXPANDABLE SECTIONS ==================== */
+        .expander {
+            margin: 1.5rem 0;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(26, 40, 71, 0.4) 0%, rgba(36, 55, 89, 0.2) 100%);
+            backdrop-filter: blur(10px);
+        }
+
+        .expander-header {
+            padding: 1.5rem;
+            background: linear-gradient(90deg, rgba(26, 40, 71, 0.5) 0%, rgba(36, 55, 89, 0.3) 100%);
+            border-bottom: 1px solid transparent;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
+        .expander-header:hover {
+            background: linear-gradient(90deg, rgba(26, 40, 71, 0.7) 0%, rgba(36, 55, 89, 0.5) 100%);
+            border-bottom-color: var(--border-color);
+        }
+
+        .expander-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--white-pure);
+            letter-spacing: 0.3px;
+        }
+
+        .expander-arrow {
+            font-size: 1rem;
+            color: var(--cian-bright);
+            transition: transform 0.3s ease;
+        }
+
+        .expander-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+            background: rgba(10, 14, 26, 0.5);
+        }
+
+        .expander-body {
+            padding: 2rem;
+        }
+
+        .expander.open .expander-content {
+            max-height: 2000px;
+        }
+
+        .expander.open .expander-arrow {
+            transform: rotate(180deg);
+        }
+
+        /* ==================== FORMULA STYLES ==================== */
+        .formula-box {
+            background: rgba(26, 40, 71, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            text-align: center;
+            font-size: 1.1rem;
+            overflow-x: auto;
+        }
+
+        .formula-label {
+            font-size: 0.9rem;
+            color: var(--cian-bright);
+            margin-bottom: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ==================== CHART CONTAINER ==================== */
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .chart-panel {
+            background: linear-gradient(135deg, rgba(26, 40, 71, 0.6) 0%, rgba(36, 55, 89, 0.4) 100%);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-panel::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(0, 212, 255, 0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .chart-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--white-pure);
+            margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 350px;
+            z-index: 2;
+        }
+
+        /* ==================== TABLE STYLES ==================== */
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: 12px;
+            margin-top: 1.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(26, 40, 71, 0.4);
+        }
+
+        table thead {
+            background: linear-gradient(90deg, rgba(0, 212, 255, 0.15) 0%, rgba(0, 212, 255, 0.05) 100%);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        table th {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            font-weight: 700;
+            color: var(--cian-bright);
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        table td {
+            padding: 0.9rem 1.5rem;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+            color: var(--white-soft);
+            font-size: 0.95rem;
+        }
+
+        table tbody tr:hover {
+            background: rgba(0, 212, 255, 0.05);
+        }
+
+        /* ==================== FOOTER ==================== */
+        footer {
+            background: linear-gradient(180deg, rgba(26, 40, 71, 0.6) 0%, rgba(10, 14, 26, 0.9) 100%);
+            border-top: 1px solid var(--border-color);
+            padding: 3rem;
+            text-align: center;
+            color: var(--white-soft);
+            opacity: 0.8;
+            margin-left: 280px;
+            margin-top: 5rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        footer p {
+            margin: 0.5rem 0;
+            font-size: 0.9rem;
+        }
+
+        /* ==================== RESPONSIVE ==================== */
+        @media (max-width: 1024px) {
+            nav {
+                width: 240px;
+            }
+
+            main {
+                margin-left: 240px;
+            }
+
+            footer {
+                margin-left: 240px;
+            }
+
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .hero-metrics {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            section {
+                padding: 3rem 2rem;
+            }
+
+            .chart-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            nav {
+                position: relative;
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+                padding: 1rem;
+                margin-bottom: 1rem;
+            }
+
+            main {
+                margin-left: 0;
+            }
+
+            footer {
+                margin-left: 0;
+            }
+
+            .hero-title {
+                font-size: 1.8rem;
+            }
+
+            .hero-metrics {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+
+            section {
+                padding: 2rem 1rem;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+
+        /* ==================== SCROLL ANIMATIONS ==================== */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+
+        .stagger-1 { animation-delay: 0.1s; }
+        .stagger-2 { animation-delay: 0.2s; }
+        .stagger-3 { animation-delay: 0.3s; }
+        .stagger-4 { animation-delay: 0.4s; }
+        .stagger-5 { animation-delay: 0.5s; }
+    </style>
+</head>
+<body>
+    <!-- Navigation Sidebar -->
+    <nav>
+        <div class="nav-header">
+            <div class="nav-logo">🛰️ COMANDO TÁCTICO</div>
+            <div class="nav-title">GSM/EDGE<br>Red Táctica</div>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a class="nav-link active" href="#hero">Centro de Mando</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#introduccion">Misión</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#estado-arte">Estado del Arte</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#metodologia">Metodología</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#escenario-a">Escenario A</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#escenario-b">Escenario B</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#resultados">Resultados</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#discusion">Debriefing</a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Hero Section -->
+        <section class="hero" id="hero">
+            <div class="hero-content">
+                <div class="hero-badge">🎖️ Proyecto de Investigación Académica</div>
+                <h1 class="hero-title">Red Táctica GSM/EDGE<br>Entornos de Misión Crítica</h1>
+                <p class="hero-subtitle">Diseño ingenieril de una red de comunicaciones robusto para operaciones tácticas con control espectral certificado y voz de misión crítica</p>
+                
+                <div class="hero-metrics">
+                    <div class="metric-box">
+                        <span class="metric-value">900</span>
+                        <span class="metric-label">MHz</span>
+                    </div>
+                    <div class="metric-box">
+                        <span class="metric-value">250</span>
+                        <span class="metric-label">km/h</span>
+                    </div>
+                    <div class="metric-box">
+                        <span class="metric-value">3.5</span>
+                        <span class="metric-label">dB SIR</span>
+                    </div>
+                    <div class="metric-box">
+                        <span class="metric-value">24</span>
+                        <span class="metric-label">ARFCN</span>
+                    </div>
+                </div>
+
+                <div class="cta-buttons">
+                    <a href="#introduccion" class="btn btn-primary">Explorar Misión</a>
+                    <a href="#resultados" class="btn btn-secondary">Ver Resultados</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Introduction Section -->
+        <section id="introduccion">
+            <h2>Briefing de Misión</h2>
+            <p>Sistema táctico de comunicaciones GSM/EDGE diseñado para operaciones en entornos de movilidad extrema con control riguroso del espectro electromagnético y certificación según Directiva RED.</p>
+            
+            <div class="intro-grid">
+                <div class="card fade-in stagger-1">
+                    <div class="card-icon">🛡️</div>
+                    <div class="card-title">Robustez</div>
+                    <div class="card-text">Diseño resiliente frente a desvanecimiento multitrayecto, interferencia co-canal y variabilidad del canal radio en movilidad.</div>
+                </div>
+                <div class="card fade-in stagger-2">
+                    <div class="card-icon">📞</div>
+                    <div class="card-title">Voz de Misión Crítica</div>
+                    <div class="card-text">Garantía de capacidad de voz con prioridad táctica, interoperabilidad full-duplex y baja latencia de extremo a extremo.</div>
+                </div>
+                <div class="card fade-in stagger-3">
+                    <div class="card-icon">📡</div>
+                    <div class="card-title">Transmisión de Datos</div>
+                    <div class="card-text">EDGE para transmisión de datos de baja tasa: telemetría, posicionamiento y sincronización de operaciones tácticas.</div>
+                </div>
+                <div class="card fade-in stagger-4">
+                    <div class="card-icon">🔗</div>
+                    <div class="card-title">Interoperabilidad</div>
+                    <div class="card-text">Compatibilidad total con estándares 3GPP Release 4/5, equipos tácticos certificados y procedimientos OTAN.</div>
+                </div>
+                <div class="card fade-in stagger-5">
+                    <div class="card-icon">⚙️</div>
+                    <div class="card-title">Control Espectral</div>
+                    <div class="card-text">Planificación frecuencial rigurosa, reutilización de clúster N=4, análisis de interferencia co-canal y SIR.</div>
+                </div>
+                <div class="card fade-in stagger-5">
+                    <div class="card-icon">✅</div>
+                    <div class="card-title">Certificación RED</div>
+                    <div class="card-text">Conformidad con Directiva de Equipos de Radio, medidas instrumentales de ruido según RBW y límites de emisión.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Estado del Arte -->
+        <section id="estado-arte">
+            <h2>Estado del Arte - Fundamentos Técnicos</h2>
+            <p>Principios fundamentales de GSM/EDGE, canales físicos, fading e instrumentación espectral.</p>
+
+            <div class="expander">
+                <div class="expander-header" onclick="toggleExpander(this)">
+                    <div class="expander-title">📋 FDMA y TDMA en GSM</div>
+                    <div class="expander-arrow">▼</div>
+                </div>
+                <div class="expander-content">
+                    <div class="expander-body">
+                        <p><strong>FDMA (Frequency Division Multiple Access)</strong></p>
+                        <p>GSM subdivide el espectro en canales FDMA de 200 kHz separados. Cada celda asigna subconjuntos de estos canales a usuarios diferentes. Permite que múltiples conversaciones ocurran simultáneamente en diferentes frecuencias.</p>
+                        
+                        <div class="formula-box">
+                            <div class="formula-label">Ancho de Canal FDMA</div>
+                            <div>$$B_W = 200 \text{ kHz}$$</div>
+                        </div>
+
+                        <p style="margin-top: 1.5rem;"><strong>TDMA (Time Division Multiple Access)</strong></p>
+                        <p>Cada canal FDMA se subdivide en 8 timeslots de duración 577 µs. Esto permite que 8 usuarios compartan el mismo canal FDMA en intervalos de tiempo diferentes, maximizando la eficiencia espectral.</p>
+
+                        <div class="formula-box">
+                            <div class="formula-label">Duración del Timeslot GSM</div>
+                            <div>$$t_{TS} = 577 \text{ µs}$$</div>
+                        </div>
+
+                        <div class="formula-box">
+                            <div class="formula-label">Duración de la Trama TDMA</div>
+                            <div>$$T_{frame} = 8 \times 577 \text{ µs} = 4.616 \text{ ms}$$</div>
+                        </div>
+
+                        <p style="margin-top: 1.5rem;"><strong>Eficiencia Espectral Combinada</strong></p>
+                        <p>GSM logra una eficiencia espectral de 1.35 bps/Hz mediante la combinación de FDMA y TDMA, permitiendo approximately 8 usuarios por 200 kHz.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="expander">
+                <div class="expander-header" onclick="toggleExpander(this)">
+                    <div class="expander-title">🔊 Canales Físicos y Lógicos</div>
+                    <div class="expander-arrow">▼</div>
+                </div>
+                <div class="expander-content">
+                    <div class="expander-body">
+                        <p><strong>Canales Físicos</strong></p>
+                        <p>Un canal físico GSM es un timeslot específico en una frecuencia portadora específica, identificado por un par (ARFCN, timeslot).</p>
+
+                        <p style="margin-top: 1rem;"><strong>Canales Lógicos</strong></p>
+                        <ul style="margin: 1rem 0 1rem 2rem; line-height: 2;">
+                            <li><strong>BCCH (Broadcast Control Channel):</strong> Transmisión de información de la celda, identificación y sincronización.</li>
+                            <li><strong>CCCH (Common Control Channel):</strong> Control de acceso, paginación y peticiones de acceso aleatorio.</li>
+                            <li><strong>TCH (Traffic Channel):</strong> Transporte de conversación de usuario y datos de usuario EDGE.</li>
+                            <li><strong>FACCH (Fast Associated Control Channel):</strong> Comandos de control enviados durante una conversación activa.</li>
+                        </ul>
+
+                        <p style="margin-top: 1.5rem;"><strong>Mapeo de Canales</strong></p>
+                        <p>Escenario B: 24 ARFCN → 4 celdas → 6 ARFCN por celda → 1 BCCH + 5 TCH por celda.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="expander">
+                <div class="expander-header" onclick="toggleExpander(this)">
+                    <div class="expander-title">〰️ Fading Multitrayecto: Rayleigh y Rician</div>
+                    <div class="expander-arrow">▼</div>
+                </div>
+                <div class="expander-content">
+                    <div class="expander-body">
+                        <p><strong>Fading Rayleigh</strong> (Non-Line-of-Sight, NLOS)</p>
+                        <p>Ocurre cuando la señal llega al receptor mediante múltiples caminos reflejados sin línea directa. La amplitud de la envolvente sigue una distribución Rayleigh.</p>
+
+                        <div class="formula-box">
+                            <div class="formula-label">Distribución de Rayleigh</div>
+                            <div>$$p(r) = \frac{r}{\sigma^2} \exp\left(-\frac{r^2}{2\sigma^2}\right), \quad r \geq 0$$</div>
+                        </div>
+
+                        <p style="margin-top: 1.5rem;"><strong>Fading Rician</strong> (Line-of-Sight dominante, LOS)</p>
+                        <p>Cuando existe una componente de línea directa dominante además de componentes multitrayecto. La envolvente sigue distribución Rician con factor K.</p>
+
+                        <div class="formula-box">
+                            <div class="formula-label">Factor K de Rician</div>
+                            <div>$$K = \frac{P_{LOS}}{P_{NLOS}}$$</div>
+                        </div>
+
+                        <p style="margin-top: 1rem;">Operaciones tácticas en valle montañoso: componente NLOS dominante (Rayleigh).</p>
+                        <p>Operaciones en campamento base con visibilidad directa: componente LOS con reflexiones (Rician con K moderado).</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="expander">
+                <div class="expander-header" onclick="toggleExpander(this)">
+                    <div class="expander-title">📏 Coherencia del Canal: Doppler y Tiempo de Coherencia</div>
+                    <div class="expander-arrow">▼</div>
+                </div>
+                <div class="expander-content">
+                    <div class="expander-body">
+                        <p><strong>Desplazamiento Doppler</strong></p>
+                        <p>Movimiento del móvil a velocidad v en frecuencia portadora fc produce desplazamiento Doppler máximo:</p>
+
+                        <div class="formula-box">
+                            <div class="formula-label">Máximo Desplazamiento Doppler</div>
+                            <div>$$f_d = \frac{v \cdot f_c}{c}$$</div>
+                        </div>
+
+                        <p style="margin-top: 1rem;">donde v es velocidad (m/s), fc es frecuencia portadora (Hz), c es velocidad luz (3×10⁸ m/s).</p>
+
+                        <p style="margin-top: 1.5rem;"><strong>Tiempo de Coherencia</strong></p>
+                        <p>Duración del intervalo de tiempo durante el cual el canal permanece aproximadamente plano (sin distorsión por multitrayecto).</p>
+
+                        <div class="formula-box">
+                            <div class="formula-label">Tiempo de Coherencia (aprox.)</div>
+                            <div>$$T_c \approx \frac{0.423}{\pi \cdot f_d}$$</div>
+                        </div>
+
+                        <p style="margin-top: 1rem;"><strong>Interpretación Táctica</strong></p>
+                        <p>Si Tc >> timeslot GSM (577 µs): canal ESTABLE para el timeslot (cuasiestático).</p>
+                        <p>Si Tc ≈ timeslot GSM: canal CON MARGEN REDUCIDO (desvanecimiento durante transmisión).</p>
+                        <p>Si Tc &lt; timeslot GSM: canal INESTABLE (profundo desvanecimiento durante transmisión).</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="expander">
+                <div class="expander-header" onclick="toggleExpander(this)">
+                    <div class="expander-title">🔬 Certificación RED: Instrumentación de Espectro</div>
+                    <div class="expander-arrow">▼</div>
+                </div>
+                <div class="expander-content">
+                    <div class="expander-body">
+                        <p><strong>Ancho de Banda de Resolución (RBW)</strong></p>
+                        <p>En analizadores de espectro, el RBW determina la resolución en frecuencia y el ancho de banda de ruido integrado.</p>
+
+                        <div class="formula-box">
+                            <div class="formula-label">Piso de Ruido vs RBW</div>
+                            <div>$$N_f = NF + 10\log_{10}(RBW) + 10\log_{10}(T)$$</div>
+                        </div>
+
+                        <p style="margin-top: 1rem;">donde NF es figura de ruido del receptor (dB), RBW es ancho de banda resolución, T es tiempo de integración.</p>
+
+                        <p style="margin-top: 1.5rem;"><strong>Estándares de Medida</strong></p>
+                        <ul style="margin: 1rem 0 1rem 2rem; line-height: 1.8;">
+                            <li>RBW 100 kHz: medidas rápidas de cobertura y barridos de espectro.</li>
+                            <li>RBW 10 kHz: medidas precisas de potencia de portadora y canales adyacentes.</li>
+                            <li>RBW 1 kHz: medidas ultra-precisas para componentes espurias y armónicos.</li>
+                        </ul>
+
+                        <p style="margin-top: 1.5rem;"><strong>Directiva RED 2014/53/EU</strong></p>
+                        <p>Equipos de radio deben cumplir límites de emisión en bandas vecinas, evitar interferencia perjudicial y demostrar conformidad mediante medidas especificadas.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Metodología -->
+        <section id="metodologia">
+            <h2>Metodología de Ingeniería</h2>
+            <p>Proceso de cálculo y validación de parámetros de red táctica.</p>
+
+            <h3 style="margin: 2rem 0 1rem 0; font-size: 1.3rem; color: var(--white-pure);">1️⃣ Configuración de GSM</h3>
+            
+            <div class="formula-box">
+                <div class="formula-label">Frecuencia Portadora</div>
+                <div>$$f_c = 900 \text{ MHz (Band IV GSM)}$$</div>
+            </div>
+
+            <div class="formula-box">
+                <div class="formula-label">Ancho de Canal FDMA</div>
+                <div>$$B_{FDMA} = 200 \text{ kHz}$$</div>
+            </div>
+
+            <div class="formula-box">
+                <div class="formula-label">Timeslots TDMA</div>
+                <div>$$N_{slots} = 8 \text{ slots/trama}$$</div>
+            </div>
+
+            <h3 style="margin: 2rem 0 1rem 0; font-size: 1.3rem; color: var(--white-pure);">2️⃣ Escenario A: Análisis de Movilidad</h3>
+
+            <div class="formula-box">
+                <div class="formula-label">Velocidades Operacionales</div>
+                <div>$$v_1 = 50 \text{ km/h (baja)}, \quad v_2 = 250 \text{ km/h (alta)}$$</div>
+            </div>
+
+            <div class="formula-box">
+                <div class="formula-label">Conversión a m/s</div>
+                <div>$$v \text{ [m/s]} = v \text{ [km/h]} \times \frac{1}{3.6}$$</div>
+            </div>
+
+            <div class="formula-box">
+                <div class="formula-label">Máximo Shift Doppler</div>
+                <div>$$f_d = \frac{v \cdot f_c}{c} = \frac{(v_{m/s}) \times 900 \times 10^6}{3 \times 10^8}$$</div>
+            </div>
+
+            <div class="formula-box">
+                <div class="formula-label">Tiempo de Coherencia</div>
+                <div>$$T_c = \frac{0.423}{\pi \cdot f_d} \text{ [segundos]}$$</div>
+            </div>
+
+            <h3 style="margin: 2rem 0 1rem 0; font-size: 1.3rem; color: var(--white-pure);">3️⃣ Escenario B: Planificación de Frecuencias</h3>
+
+            <div class="formula-box">
+                <div class="formula-label">Tamaño de Clúster</div>
+                <div>$$N = 4 \text{ (configuración estándar OTAN)}$$</div>
+            </div>
+
+            <div class="formula-box">
+                <div class="formula-label">Distancia de Reúso Frecuencial</div>
+                <div>$$D = R \sqrt{3N}$$</div>
+            </div>
+
+            <div class="formula-box">
+                <div class="formula-label">Relación D/R</div>
+                <div>$$\frac{D}{R} = \sqrt{3N} = \sqrt{12} = 3.464$$</div>
+            </div>
+
+            <div class="formula-box">
+                <div class="formula-label">Protección Co-canal (SIR)</div>
+                <div>$$SIR = \frac{P_{desired}}{P_{interferer}}$$</div>
+            </div>
+
+            <div class="formula-box">
+                <div class="formula-label">Figura de Ruido del Receptor</div>
+                <div>$$NF \text{ [dB]} = 6 \text{ dB (típico receptor táctico)}$$</div>
+            </div>
+        </section>
+
+        <!-- Escenario A -->
+        <section id="escenario-a">
+            <h2>Escenario A: Convoy de Alta Velocidad en Terreno Montañoso</h2>
+            <p>Análisis de movilidad extrema, Doppler y coherencia del canal. El convoy se mueve a través de un valle montañoso con componentes NLOS dominantes (desvanecimiento Rayleigh).</p>
+
+            <h3 style="margin: 2rem 0 1rem 0; font-size: 1.3rem; color: var(--white-pure);">Condiciones Operacionales</h3>
+
+            <div class="chart-grid">
+                <div class="chart-panel">
+                    <div class="chart-title">📊 Comparación de Velocidades</div>
+                    <div class="chart-container">
+                        <canvas id="velocityChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-panel">
+                    <div class="chart-title">🌊 Desplazamiento Doppler Máximo</div>
+                    <div class="chart-container">
+                        <canvas id="dopplerChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-grid">
+                <div class="chart-panel">
+                    <div class="chart-title">⏱️ Tiempo de Coherencia</div>
+                    <div class="chart-container">
+                        <canvas id="coherenceChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-panel">
+                    <div class="chart-title">📈 Relación Coherencia/Timeslot</div>
+                    <div class="chart-container">
+                        <canvas id="ratioChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="margin: 2rem 0 1rem 0; font-size: 1.3rem; color: var(--white-pure);">Desvanecimiento: Rayleigh vs Rician</h3>
+
+            <div class="chart-grid">
+                <div class="chart-panel">
+                    <div class="chart-title">50 km/h: Envolvente de Amplitud</div>
+                    <div class="chart-container">
+                        <canvas id="fadingLow"></canvas>
+                    </div>
+                </div>
+                <div class="chart-panel">
+                    <div class="chart-title">250 km/h: Envolvente de Amplitud</div>
+                    <div class="chart-container">
+                        <canvas id="fadingHigh"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Velocidad</th>
+                            <th>Shift Doppler</th>
+                            <th>T. Coherencia</th>
+                            <th>T. Coherencia/TS</th>
+                            <th>Estabilidad</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>50 km/h</strong></td>
+                            <td>41.67 Hz</td>
+                            <td>10.15 ms</td>
+                            <td>17.59×</td>
+                            <td style="color: #6cffb2;"><strong>✓ Cuasiestático</strong></td>
+                        </tr>
+                        <tr>
+                            <td><strong>250 km/h</strong></td>
+                            <td>208.33 Hz</td>
+                            <td>2.03 ms</td>
+                            <td>3.52×</td>
+                            <td style="color: #ffd966;"><strong>⚠ Con margen reducido</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <p style="margin-top: 1.5rem; padding: 1.5rem; background: rgba(26, 40, 71, 0.6); border-left: 3px solid var(--cian-bright); border-radius: 8px;">
+                <strong>Interpretación Táctica:</strong> A 50 km/h el canal permanece estable durante el timeslot GSM (17.59× margen). A 250 km/h el margen se reduce a 3.52×, indicando variabilidad significativa de canal durante la transmisión. Se requieren técnicas de codificación robusta y salto de frecuencia.
+            </p>
+        </section>
+
+        <!-- Escenario B -->
+        <section id="escenario-b">
+            <h2>Escenario B: Campamento Base - Planificación Frecuencial y RED</h2>
+            <p>Diseño de red celular táctica con 4 celdas, planificación de 24 ARFCN y certificación RED mediante análisis de ruido según RBW.</p>
+
+            <h3 style="margin: 2rem 0 1rem 0; font-size: 1.3rem; color: var(--white-pure);">Distribución de Frecuencias (N=4)</h3>
+
+            <div class="chart-grid">
+                <div class="chart-panel">
+                    <div class="chart-title">🗺️ Mapa de Clúster Frecuencial</div>
+                    <div class="chart-container">
+                        <canvas id="clusterMap"></canvas>
+                    </div>
+                </div>
+                <div class="chart-panel">
+                    <div class="chart-title">📡 Asignación ARFCN por Celda</div>
+                    <div class="chart-container">
+                        <canvas id="arfcnChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Celda</th>
+                            <th>Radio (km)</th>
+                            <th>ARFCN Asignados</th>
+                            <th>Portadoras/Celda</th>
+                            <th>Configuración</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>A</strong></td>
+                            <td>1.5</td>
+                            <td>1, 2, 3, 4, 5, 6</td>
+                            <td>6 (1 BCCH + 5 TCH)</td>
+                            <td>Centro</td>
+                        </tr>
+                        <tr>
+                            <td><strong>B</strong></td>
+                            <td>1.5</td>
+                            <td>7, 8, 9, 10, 11, 12</td>
+                            <td>6 (1 BCCH + 5 TCH)</td>
+                            <td>NE</td>
+                        </tr>
+                        <tr>
+                            <td><strong>C</strong></td>
+                            <td>1.5</td>
+                            <td>13, 14, 15, 16, 17, 18</td>
+                            <td>6 (1 BCCH + 5 TCH)</td>
+                            <td>SE</td>
+                        </tr>
+                        <tr>
+                            <td><strong>D</strong></td>
+                            <td>1.5</td>
+                            <td>19, 20, 21, 22, 23, 24</td>
+                            <td>6 (1 BCCH + 5 TCH)</td>
+                            <td>O</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3 style="margin: 2rem 0 1rem 0; font-size: 1.3rem; color: var(--white-pure);">Análisis Instrumental: Ruido según RBW (Directiva RED)</h3>
+
+            <div class="chart-grid">
+                <div class="chart-panel">
+                    <div class="chart-title">🔬 Piso de Ruido vs RBW</div>
+                    <div class="chart-container">
+                        <canvas id="rbwChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-panel">
+                    <div class="chart-title">📉 Delta Respecto a RBW 100 kHz</div>
+                    <div class="chart-container">
+                        <canvas id="deltaRbwChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>RBW</th>
+                            <th>Figura Ruido</th>
+                            <th>Piso Ruido</th>
+                            <th>Delta vs 100kHz</th>
+                            <th>Aplicación</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>100 kHz</strong></td>
+                            <td>6.0 dB</td>
+                            <td>-118.0 dBm</td>
+                            <td>0.0 dB</td>
+                            <td>Barridos rápidos</td>
+                        </tr>
+                        <tr>
+                            <td><strong>10 kHz</strong></td>
+                            <td>6.0 dB</td>
+                            <td>-128.0 dBm</td>
+                            <td>-10.0 dB</td>
+                            <td>Medidas precisas</td>
+                        </tr>
+                        <tr>
+                            <td><strong>1 kHz</strong></td>
+                            <td>6.0 dB</td>
+                            <td>-138.0 dBm</td>
+                            <td>-20.0 dB</td>
+                            <td>Ultra-precisas</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <p style="margin-top: 1.5rem; padding: 1.5rem; background: rgba(26, 40, 71, 0.6); border-left: 3px solid var(--cian-bright); border-radius: 8px;">
+                <strong>Certificación RED:</strong> El analizador de espectro con RBW 10 kHz proporciona la precisión requerida para verificar conformidad con límites de emisión y detectar interferencia perjudicial en bandas adyacentes.
+            </p>
+        </section>
+
+        <!-- Resultados -->
+        <section id="resultados">
+            <h2>Resultados - Dashboard de Operaciones</h2>
+            <p>Resumen ejecutivo de parámetros de red táctica, desempeño en movilidad y certificación espectral.</p>
+
+            <h3 style="margin: 2rem 0 1rem 0; font-size: 1.3rem; color: var(--white-pure);">Resumen FDMA/TDMA</h3>
+
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Frecuencia</th>
+                            <th>FDMA BW</th>
+                            <th>TDMA Slots</th>
+                            <th>Duración TS</th>
+                            <th>Duración Trama</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>900 MHz</td>
+                            <td>200 kHz</td>
+                            <td>8</td>
+                            <td>577 µs</td>
+                            <td>4.616 ms</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3 style="margin: 2rem 0 1rem 0; font-size: 1.3rem; color: var(--white-pure);">Escenario A: Movilidad Táctica</h3>
+
+            <div class="chart-grid">
+                <div class="chart-panel">
+                    <div class="chart-title">📊 Síntesis de Doppler y Coherencia</div>
+                    <div class="chart-container">
+                        <canvas id="synthesisChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-panel">
+                    <div class="chart-title">🎯 Margen de Estabilidad</div>
+                    <div class="chart-container">
+                        <canvas id="stabilityChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="margin: 2rem 0 1rem 0; font-size: 1.3rem; color: var(--white-pure);">Escenario B: Planificación RED</h3>
+
+            <div class="chart-grid">
+                <div class="chart-panel">
+                    <div class="chart-title">📡 SIR Protección Co-canal</div>
+                    <div class="chart-container">
+                        <canvas id="sirChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-panel">
+                    <div class="chart-title">🔬 Espectro Analizador</div>
+                    <div class="chart-container">
+                        <canvas id="spectrumChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Métrica</th>
+                            <th>50 km/h</th>
+                            <th>250 km/h</th>
+                            <th>Campamento (B)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Doppler Máximo</strong></td>
+                            <td>41.67 Hz</td>
+                            <td>208.33 Hz</td>
+                            <td>—</td>
+                        </tr>
+                        <tr>
+                            <td><strong>T. Coherencia</strong></td>
+                            <td>10.15 ms</td>
+                            <td>2.03 ms</td>
+                            <td>—</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Estabilidad</strong></td>
+                            <td style="color: #6cffb2;">✓ Cuasiestático</td>
+                            <td style="color: #ffd966;">⚠ Con margen</td>
+                            <td>—</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Reutilización</strong></td>
+                            <td>—</td>
+                            <td>—</td>
+                            <td>N=4, D/R=3.46</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Piso Ruido (10kHz)</strong></td>
+                            <td>—</td>
+                            <td>—</td>
+                            <td>-128 dBm</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Discusión y Conclusiones -->
+        <section id="discusion">
+            <h2>Debriefing - Análisis Técnico Integral</h2>
+            <p>Evaluación de desempeño operacional, impacto de fenómenos de propagación y recomendaciones de ingeniería.</p>
+
+            <div class="expander">
+                <div class="expander-header" onclick="toggleExpander(this)">
+                    <div class="expander-title">🚀 Conclusiones Principales</div>
+                    <div class="expander-arrow">▼</div>
+                </div>
+                <div class="expander-content">
+                    <div class="expander-body">
+                        <h4 style="color: var(--cian-bright); margin-bottom: 1rem;">1. Estabilidad de Canal en Movilidad</h4>
+                        <p>El análisis de coherencia temporal demuestra que a velocidades moderadas (50 km/h) el canal permanece prácticamente cuasiestático durante el timeslot GSM. Sin embargo, a alta velocidad (250 km/h) el margen se reduce significativamente, requiriendo técnicas de adaptación rápida y codificación robusta.</p>
+
+                        <h4 style="color: var(--cian-bright); margin-bottom: 1rem; margin-top: 1.5rem;">2. Desvanecimiento Multitrayecto</h4>
+                        <p>En entorno montañoso (Escenario A), predomina fading Rayleigh con componente NLOS. En campamento base (Escenario B) con visibilidad mejorada, la componente Rician reduce la profundidad de desvanecimiento. Ambos casos requieren salto de frecuencia (frequency hopping) para mitigar efectos.</p>
+
+                        <h4 style="color: var(--cian-bright); margin-bottom: 1rem; margin-top: 1.5rem;">3. Reutilización Frecuencial</h4>
+                        <p>Configuración N=4 con relación D/R=3.464 proporciona excelente compromisointerferencia/capacidad. La separación de 5.2 km entre celdas co-canal asegura SIR ≥ 9 dB bajo condiciones normales de propagación.</p>
+
+                        <h4 style="color: var(--cian-bright); margin-bottom: 1rem; margin-top: 1.5rem;">4. Certificación RED</h4>
+                        <p>La instrumentación a RBW variable permite validar conformidad espectral: RBW 100 kHz para análisis rápido, RBW 10 kHz para medidas precisas de portadora, RBW 1 kHz para detección de armónicos y espurias.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="expander">
+                <div class="expander-header" onclick="toggleExpander(this)">
+                    <div class="expander-title">⚙️ Recomendaciones de Ingeniería</div>
+                    <div class="expander-arrow">▼</div>
+                </div>
+                <div class="expander-content">
+                    <div class="expander-body">
+                        <ul style="line-height: 2; margin-left: 2rem;">
+                            <li><strong>Codificación Robusta:</strong> Usar esquema CS-4 (convolutional half-rate) a velocidades altas para compensar desvanecimiento rápido.</li>
+                            <li><strong>Frequency Hopping:</strong> Implementar FHSS (Frequency Hopping Spread Spectrum) de acuerdo a estándar 3GPP, especialmente en Escenario A.</li>
+                            <li><strong>Control Potencia Adaptativo:</strong> DPC (Dynamic Power Control) cada timeslot para mantener SIR objetivo.</li>
+                            <li><strong>Sincronización Mejorada:</strong> Incluir algoritmo de detección de Doppler para sincronización de fase en alta velocidad.</li>
+                            <li><strong>Monitoreo Espectral Continuo:</strong> Realizar barridos periódicos RBW 10 kHz para detección temprana de interferencia.</li>
+                            <li><strong>Reserva de Capacidad:</strong> Preasignar 25% de recursos como margen de seguridad para operaciones tácticas impredecibles.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="expander">
+                <div class="expander-header" onclick="toggleExpander(this)">
+                    <div class="expander-title">🎖️ Consideraciones OTAN e Interoperabilidad</div>
+                    <div class="expander-arrow">▼</div>
+                </div>
+                <div class="expander-content">
+                    <div class="expander-body">
+                        <p>El diseño se conforma a estándares OTAN STANAG 4204 (GSM Mobile Radio System) y STANAG 4527 (Frequency Hopping Spread Spectrum). La interoperabilidad se asegura mediante:</p>
+                        <ul style="line-height: 2; margin-left: 2rem; margin-top: 1rem;">
+                            <li>Compatibilidad con receptores tácticos certificados de múltiples proveedores.</li>
+                            <li>Protocolo de señalización 3GPP Release 4/5 estándar.</li>
+                            <li>Cifrado autorizado según requerimientos de seguridad clasificada.</li>
+                            <li>Certificación de emisión RF en bandas compartidas con sistemas aliados.</li>
+                        </ul>
+                        <p style="margin-top: 1.5rem;">La red táctica es agnóstica respecto a fabricante y puede integrar radios de sistemas TETRAPOL y LTE tácticos en operaciones futuras.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="expander">
+                <div class="expander-header" onclick="toggleExpander(this)">
+                    <div class="expander-title">📊 Trabajo Futuro y Extensiones</div>
+                    <div class="expander-arrow">▼</div>
+                </div>
+                <div class="expander-content">
+                    <div class="expander-body">
+                        <ul style="line-height: 2; margin-left: 2rem;">
+                            <li><strong>Simulación de Canal:</strong> Implementar simulator Ray Tracing 3D para propagación en terreno montañoso real.</li>
+                            <li><strong>Integración LTE-Táctico:</strong> Extensión a LTE Band 7/20 para transmisión de datos tácticos de banda ancha.</li>
+                            <li><strong>Análisis de Seguridad RF:</strong> Estudio de vulnerabilidad frente a jamming y contramedidas ECCM (Electronic Counter-Counter-Measures).</li>
+                            <li><strong>Optimización Energética:</strong> Reducción de consumo de batería en equipos móviles mediante algoritmos de sleep-mode inteligentes.</li>
+                            <li><strong>Certificación Medioambiental:</strong> Estudio de exposición SAR (Specific Absorption Rate) en operadores tácticos.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 3rem; padding: 2rem; background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(37, 99, 235, 0.05) 100%); border: 1px solid var(--border-color); border-radius: 12px; border-left: 4px solid var(--cian-bright);">
+                <h3 style="color: var(--cian-bright); margin-bottom: 1rem;">🎯 Conclusión Final</h3>
+                <p>El diseño de red táctica GSM/EDGE presentado demuestra viabilidad técnica para operaciones de misión crítica en entornos de movilidad extrema, desvanecimiento multitrayecto y demanda de certificación espectral. La combinación de análisis riguroso de propagación, planificación frecuencial sofisticada e instrumentación avanzada asegura desempeño operacional confiable bajo condiciones tácticas desafiantes.</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>🛰️ <strong>Red Táctica GSM/EDGE para Entornos de Misión Crítica</strong></p>
+        <p>Proyecto de Investigación Académica en Ingeniería de Telecomunicaciones</p>
+        <p style="margin-top: 1rem; opacity: 0.6;">© 2024 Centro de Ingeniería Táctica | Conforme a Directiva RED 2014/53/EU</p>
+    </footer>
+
+    <script>
+        // Chart.js Configuration
+        Chart.defaults.color = '#a9beda';
+        Chart.defaults.borderColor = 'rgba(0, 212, 255, 0.15)';
+        Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif';
+
+        // Dark mode for charts
+        const chartBg = 'rgba(26, 40, 71, 0.4)';
+        const gridColor = 'rgba(0, 212, 255, 0.1)';
+        const primaryColor = '#00d4ff';
+        const accentColor = '#2563eb';
+
+        // Initialize Charts
+        function initCharts() {
+            // Velocity Chart
+            new Chart(document.getElementById('velocityChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Velocidad Baja', 'Velocidad Alta'],
+                    datasets: [{
+                        label: 'km/h',
+                        data: [50, 250],
+                        backgroundColor: [primaryColor, accentColor],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: gridColor } }
+                    }
+                }
+            });
+
+            // Doppler Chart
+            new Chart(document.getElementById('dopplerChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['50 km/h', '250 km/h'],
+                    datasets: [{
+                        label: 'Hz',
+                        data: [41.67, 208.33],
+                        backgroundColor: [primaryColor, '#ff6b6b'],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { grid: { color: gridColor } } }
+                }
+            });
+
+            // Coherence Chart
+            new Chart(document.getElementById('coherenceChart'), {
+                type: 'line',
+                data: {
+                    labels: ['50 km/h', '250 km/h'],
+                    datasets: [{
+                        label: 'ms',
+                        data: [10.15, 2.03],
+                        borderColor: primaryColor,
+                        backgroundColor: 'rgba(0, 212, 255, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: primaryColor,
+                        pointRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { grid: { color: gridColor } } }
+                }
+            });
+
+            // Ratio Chart
+            new Chart(document.getElementById('ratioChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['50 km/h', '250 km/h'],
+                    datasets: [{
+                        label: 'Tc / Ts (veces)',
+                        data: [17.59, 3.52],
+                        backgroundColor: ['#6cffb2', '#ffd966'],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { grid: { color: gridColor } } }
+                }
+            });
+
+            // Fading Low
+            const fadingLowCtx = document.getElementById('fadingLow');
+            const fadingLowData = generateFadingData(41.67, 'low');
+            new Chart(fadingLowCtx, {
+                type: 'line',
+                data: {
+                    labels: fadingLowData.labels,
+                    datasets: [
+                        {
+                            label: 'Rayleigh',
+                            data: fadingLowData.rayleigh,
+                            borderColor: '#ffd966',
+                            backgroundColor: 'rgba(255, 217, 102, 0.1)',
+                            fill: true,
+                            tension: 0.3
+                        },
+                        {
+                            label: 'Rician',
+                            data: fadingLowData.rician,
+                            borderColor: primaryColor,
+                            backgroundColor: 'rgba(0, 212, 255, 0.1)',
+                            fill: true,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top' } },
+                    scales: { y: { grid: { color: gridColor }, beginAtZero: true, max: 4 } }
+                }
+            });
+
+            // Fading High
+            const fadingHighCtx = document.getElementById('fadingHigh');
+            const fadingHighData = generateFadingData(208.33, 'high');
+            new Chart(fadingHighCtx, {
+                type: 'line',
+                data: {
+                    labels: fadingHighData.labels,
+                    datasets: [
+                        {
+                            label: 'Rayleigh',
+                            data: fadingHighData.rayleigh,
+                            borderColor: '#ffd966',
+                            backgroundColor: 'rgba(255, 217, 102, 0.1)',
+                            fill: true,
+                            tension: 0.3
+                        },
+                        {
+                            label: 'Rician',
+                            data: fadingHighData.rician,
+                            borderColor: primaryColor,
+                            backgroundColor: 'rgba(0, 212, 255, 0.1)',
+                            fill: true,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top' } },
+                    scales: { y: { grid: { color: gridColor }, beginAtZero: true, max: 4 } }
+                }
+            });
+
+            // Cluster Map
+            new Chart(document.getElementById('clusterMap'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Celda A', 'Celda B', 'Celda C', 'Celda D'],
+                    datasets: [{
+                        data: [6, 6, 6, 6],
+                        backgroundColor: [primaryColor, accentColor, '#6cffb2', '#ffd966'],
+                        borderColor: '#0a0e1a',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+
+            // ARFCN Chart
+            new Chart(document.getElementById('arfcnChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['A', 'B', 'C', 'D'],
+                    datasets: [{
+                        label: 'ARFCN Asignados',
+                        data: [6, 6, 6, 6],
+                        backgroundColor: [primaryColor, accentColor, '#6cffb2', '#ffd966'],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, max: 8 } }
+                }
+            });
+
+            // RBW Chart
+            new Chart(document.getElementById('rbwChart'), {
+                type: 'line',
+                data: {
+                    labels: ['100 kHz', '10 kHz', '1 kHz'],
+                    datasets: [{
+                        label: 'dBm',
+                        data: [-118, -128, -138],
+                        borderColor: '#6cffb2',
+                        backgroundColor: 'rgba(108, 255, 178, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#6cffb2',
+                        pointRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { grid: { color: gridColor } } }
+                }
+            });
+
+            // Delta RBW Chart
+            new Chart(document.getElementById('deltaRbwChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['100 kHz', '10 kHz', '1 kHz'],
+                    datasets: [{
+                        label: 'dB',
+                        data: [0, -10, -20],
+                        backgroundColor: [primaryColor, accentColor, '#6cffb2'],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { grid: { color: gridColor } } }
+                }
+            });
+
+            // Synthesis Chart
+            new Chart(document.getElementById('synthesisChart'), {
+                type: 'bubble',
+                data: {
+                    datasets: [
+                        {
+                            label: '50 km/h',
+                            data: [{x: 41.67, y: 10.15, r: 15}],
+                            backgroundColor: 'rgba(108, 255, 178, 0.6)'
+                        },
+                        {
+                            label: '250 km/h',
+                            data: [{x: 208.33, y: 2.03, r: 15}],
+                            backgroundColor: 'rgba(255, 217, 102, 0.6)'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top' } },
+                    scales: {
+                        x: { title: { display: true, text: 'Doppler (Hz)' }, grid: { color: gridColor } },
+                        y: { title: { display: true, text: 'Coherencia (ms)' }, grid: { color: gridColor } }
+                    }
+                }
+            });
+
+            // Stability Chart
+            new Chart(document.getElementById('stabilityChart'), {
+                type: 'radar',
+                data: {
+                    labels: ['50 km/h', '100 km/h', '150 km/h', '200 km/h', '250 km/h'],
+                    datasets: [{
+                        label: 'Margen de Estabilidad (Tc/Ts)',
+                        data: [17.59, 8.79, 5.86, 4.40, 3.52],
+                        borderColor: primaryColor,
+                        backgroundColor: 'rgba(0, 212, 255, 0.1)',
+                        pointBackgroundColor: primaryColor,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top' } },
+                    scales: { r: { beginAtZero: true, max: 20 } }
+                }
+            });
+
+            // SIR Chart
+            new Chart(document.getElementById('sirChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Celda A', 'Celda B', 'Celda C', 'Celda D'],
+                    datasets: [{
+                        label: 'SIR (dB)',
+                        data: [9, 9, 9, 9],
+                        backgroundColor: primaryColor,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, max: 12 } }
+                }
+            });
+
+            // Spectrum Chart
+            new Chart(document.getElementById('spectrumChart'), {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: 25}, (_, i) => i + 1),
+                    datasets: [{
+                        label: 'dBm',
+                        data: Array.from({length: 25}, (_, i) => -80 + Math.random() * 30 - Math.abs(i - 12) * 0.5),
+                        borderColor: primaryColor,
+                        backgroundColor: 'rgba(0, 212, 255, 0.1)',
+                        fill: true,
+                        tension: 0.2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { grid: { color: gridColor } } }
+                }
+            });
+        }
+
+        function generateFadingData(doppler, speed) {
+            const time = Array.from({length: 100}, (_, i) => i / 100);
+            const rayleigh = time.map(t => Math.abs(Math.sin(2 * Math.PI * doppler * t / 100)) * Math.exp(-t));
+            const rician = time.map(t => (1.2 + Math.sin(2 * Math.PI * doppler * t / 100)) * Math.exp(-t * 0.5));
+            return {
+                labels: time.map(t => (t * 100).toFixed(1)),
+                rayleigh: rayleigh,
+                rician: rician
+            };
+        }
+
+        // Expandable sections
+        function toggleExpander(header) {
+            const expander = header.parentElement;
+            expander.classList.toggle('open');
+        }
+
+        // Nav link active state
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function() {
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Intersection Observer for fade-in animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animation = 'fadeInUp 0.8s ease-out forwards';
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+        // Initialize on load
+        window.addEventListener('load', initCharts);
+        MathJax.typesetPromise().catch(err => console.log(err));
+    </script>
+</body>
+</html>

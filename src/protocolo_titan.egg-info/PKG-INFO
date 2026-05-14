@@ -1,0 +1,10 @@
+Metadata-Version: 2.4
+Name: protocolo-titan
+Version: 0.2.0
+Summary: Código docente para el reto Protocolo Titán: GSM/EDGE, movilidad, fading, planificación celular e instrumentación RED.
+Requires-Python: >=3.10
+Requires-Dist: numpy>=1.24
+Requires-Dist: pandas>=2.0
+Requires-Dist: matplotlib>=3.7
+Requires-Dist: streamlit>=1.30
+Requires-Dist: tabulate>=0.9
