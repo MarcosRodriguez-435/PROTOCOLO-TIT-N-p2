@@ -15,7 +15,7 @@ from .report import write_markdown_report
 
 
 def main() -> None:
-    project_root = Path.cwd()
+    project_root = Path(__file__).resolve().parents[2]
     outputs = project_root / "outputs"
     figures = outputs / "figures"
     outputs.mkdir(parents=True, exist_ok=True)

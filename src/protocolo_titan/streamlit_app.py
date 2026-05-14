@@ -9,9 +9,11 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from protocolo_titan.config import GSMConfig, ConvoyScenario, CampScenario, AnalyzerConfig
+from protocolo_titan.instrumentation import rbw_noise_table
 from protocolo_titan.radio_access import gsm_access_summary
-from protocolo_titan.scenario_a import analyze_convoy_mobility, analyze_convoy_fading
+from protocolo_titan.scenario_a import analyze_convoy_mobility, analyze_convoy_fading, fading_trace_key
 from protocolo_titan.scenario_b import analyze_camp_base
+from protocolo_titan.validation import validate_inputs
 from protocolo_titan.ui_charts import (
     figure_timeslot_signal,
     figure_noise,
@@ -128,25 +130,32 @@ def render_scenario_a(gsm, convoy, camp, analyzer):
     mobility = analyze_convoy_mobility(convoy, gsm)
     fading_summary, traces = analyze_convoy_fading(convoy, gsm)
     access = gsm_access_summary(gsm)
-    noise = analyze_camp_base(camp, gsm, analyzer)['rbw_noise']
+    noise = rbw_noise_table(analyzer)
 
-    selected_speed = st.radio('Perfil de velocidad', [50, 250], horizontal=True, index=1)
+    speed_options = [float(speed) for speed in convoy.speeds_kmh]
+    selected_speed = st.radio(
+        'Perfil de velocidad',
+        speed_options,
+        horizontal=True,
+        index=min(1, len(speed_options) - 1),
+        format_func=lambda speed: f'{int(speed) if speed.is_integer() else speed} km/h',
+    )
     selected_row = mobility[mobility['speed_kmh'] == float(selected_speed)].iloc[0]
-    selected_trace = traces[f'rician_{int(selected_speed)}_kmh']
+    selected_trace = traces[fading_trace_key('rician', float(selected_speed))]
 
     c1, c2, c3 = st.columns([4, 4, 4])
     with c1:
         st.markdown('<div class="panel"><div class="panel-title">Capa física</div>', unsafe_allow_html=True)
         a1, a2 = st.columns(2)
         with a1:
-            metric_card('FDMA', '200', 'kHz', 'Portadoras GSM-900')
+            metric_card('FDMA', f"{gsm.channel_bandwidth_hz / 1e3:.0f}", 'kHz', 'Portadoras GSM')
         with a2:
-            metric_card('TDMA', '8', 'slots', 'Timeslots por trama')
+            metric_card('TDMA', str(gsm.timeslots_per_frame), 'slots', 'Timeslots por trama')
         b1, b2 = st.columns(2)
         with b1:
-            metric_card('Separación', '200', 'kHz', 'Ancho por ARFCN')
+            metric_card('Separación', f"{gsm.channel_bandwidth_hz / 1e3:.0f}", 'kHz', 'Ancho por ARFCN')
         with b2:
-            metric_card('Duración TS', '577', 'µs', 'Timeslot GSM')
+            metric_card('Duración TS', f"{gsm.timeslot_duration_s * 1e6:.0f}", 'µs', 'Timeslot GSM')
         st.markdown('</div>', unsafe_allow_html=True)
 
     with c2:
@@ -186,7 +195,13 @@ def render_scenario_a(gsm, convoy, camp, analyzer):
     lower_left, lower_right = st.columns([8, 3])
     with lower_left:
         st.markdown('<div class="panel"><div class="panel-title">Instrumentación de espectro</div>', unsafe_allow_html=True)
-        st.radio('RBW', ['100 kHz', '10 kHz', '1 kHz'], horizontal=True, label_visibility='collapsed', index=1)
+        st.radio(
+            'RBW',
+            [f"{rbw / 1e3:g} kHz" for rbw in analyzer.rbw_values_hz],
+            horizontal=True,
+            label_visibility='collapsed',
+            index=min(1, len(analyzer.rbw_values_hz) - 1),
+        )
         info1, info2 = st.columns([1.3, 4.7])
         with info1:
             html = ['<div class="smallbox"><b>PISO DE RUIDO VS RBW</b><br><br>']
@@ -204,7 +219,7 @@ def render_scenario_a(gsm, convoy, camp, analyzer):
         st.markdown('<div class="panel"><div class="panel-title">Análisis de telemetría GSM</div>', unsafe_allow_html=True)
         a, b, c = st.columns(3)
         with a:
-            metric_card('Slot', '577', 'µs', 'Duración')
+            metric_card('Slot', f"{gsm.timeslot_duration_s * 1e6:.0f}", 'µs', 'Duración')
         with b:
             metric_card('Desplaz.', f"{selected_row['max_doppler_hz'] / 1000:.2f}", 'kHz', 'Escala visual')
         with c:
@@ -232,27 +247,36 @@ def render_scenario_b(gsm, camp, analyzer):
 
     top_left, top_right = st.columns([7, 3])
     with top_left:
-        st.markdown('<div class="panel"><div class="panel-title">Mapeo de clúster (N=4)</div>', unsafe_allow_html=True)
-        st.pyplot(figure_cluster_map(), clear_figure=True, use_container_width=True)
+        st.markdown(
+            f'<div class="panel"><div class="panel-title">Mapeo de clúster (N={camp.cluster_size})</div>',
+            unsafe_allow_html=True,
+        )
+        st.pyplot(figure_cluster_map(camp.cluster_size, camp.cell_radius_km), clear_figure=True, use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
     with top_right:
-        st.markdown('<div class="panel"><div class="panel-title">Planificación celular (N=4)</div>', unsafe_allow_html=True)
+        st.markdown(
+            f'<div class="panel"><div class="panel-title">Planificación celular (N={camp.cluster_size})</div>',
+            unsafe_allow_html=True,
+        )
         reuse_ratio = float(plan['reuse_ratio_D_over_R'].iloc[0])
         reuse_distance = float(plan['reuse_distance_km'].iloc[0])
         metric_card('Distancia de reúso', f'{reuse_distance:.2f}', 'km', 'D = R √(3N)')
         metric_card('Relación D/R', f'{reuse_ratio:.2f}', '', 'Protección co-canal')
-        metric_card('Factor de reúso', '1/4', '', 'Clúster N = 4')
-        st.markdown('<div class="panel-title" style="margin-top:12px;">Distribución de portadoras (24 CH)</div>', unsafe_allow_html=True)
-        st.pyplot(figure_carrier_distribution(plan, logical), clear_figure=True, use_container_width=True)
+        metric_card('Factor de reúso', f'1/{camp.cluster_size}', '', f'Clúster N = {camp.cluster_size}')
+        st.markdown(
+            f'<div class="panel-title" style="margin-top:12px;">Distribución de portadoras ({camp.total_carriers} CH)</div>',
+            unsafe_allow_html=True,
+        )
+        st.pyplot(figure_carrier_distribution(plan, logical, camp.total_carriers), clear_figure=True, use_container_width=True)
         st.dataframe(logical[['cell', 'arfcn', 'carrier_role']].head(8), use_container_width=True, hide_index=True)
         st.markdown('<div class="panel-title" style="margin-top:12px;">Cumplimiento y normativa</div>', unsafe_allow_html=True)
         st.markdown(
-            '<div class="smallbox"><b>Directiva RED</b><span style="float:right;color:#6CFFB2;font-weight:800;">PASS</span><br><span class="subtle">Conformidad CE y uso eficiente del espectro</span></div>',
+            '<div class="smallbox"><b>Directiva RED</b><span style="float:right;color:#8FD9FF;font-weight:800;">CHECKLIST</span><br><span class="subtle">Revisar evidencia técnica y conformidad aplicable</span></div>',
             unsafe_allow_html=True,
         )
         st.markdown(
-            '<div class="smallbox"><b>Emisiones radiadas</b><span style="float:right;color:#6CFFB2;font-weight:800;">PASS</span><br><span class="subtle">Análisis instrumental y control de ruido</span></div>',
+            '<div class="smallbox"><b>Emisiones radiadas</b><span style="float:right;color:#8FD9FF;font-weight:800;">CHECKLIST</span><br><span class="subtle">Validar medidas instrumentales y márgenes</span></div>',
             unsafe_allow_html=True,
         )
         st.markdown('</div>', unsafe_allow_html=True)
@@ -260,7 +284,7 @@ def render_scenario_b(gsm, camp, analyzer):
     bottom_left, bottom_right = st.columns([5, 5])
     with bottom_left:
         st.markdown('<div class="panel"><div class="panel-title">Gestión de interferencias (SIR)</div>', unsafe_allow_html=True)
-        st.pyplot(figure_carrier_distribution(plan, logical), clear_figure=True, use_container_width=True)
+        st.pyplot(figure_carrier_distribution(plan, logical, camp.total_carriers), clear_figure=True, use_container_width=True)
         st.dataframe(plan[['cell', 'carriers_per_cell', 'arfcn_range', 'reuse_distance_km']], use_container_width=True, hide_index=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
@@ -286,6 +310,12 @@ def main():
     convoy = ConvoyScenario(speeds_kmh=(speed_low, speed_high))
     camp = CampScenario(total_carriers=int(total_carriers), cluster_size=int(cluster_size), cell_radius_km=radius_km)
     analyzer = AnalyzerConfig(noise_figure_db=nf_db)
+    errors = validate_inputs(convoy, camp)
+
+    if errors:
+        for error in errors:
+            st.error(error)
+        return
 
     if section.startswith('Escenario A'):
         render_scenario_a(gsm, convoy, camp, analyzer)

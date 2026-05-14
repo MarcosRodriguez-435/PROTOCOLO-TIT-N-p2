@@ -25,17 +25,21 @@ def figure_timeslot_signal(trace: pd.DataFrame):
     _dark_axes(fig, ax)
     x = trace['time_us'].to_numpy()
     y = trace['envelope_normalized'].to_numpy()
+    timeslot_us = float(x.max()) if len(x) else 0.0
+    split_1 = timeslot_us * (300.0 / 577.0) if timeslot_us else 0.0
+    split_2 = timeslot_us * (540.0 / 577.0) if timeslot_us else 0.0
+    y_max = float(y.max()) if len(y) else 1.0
     ax.plot(x, y, color='#46C6FF', linewidth=1.8)
-    ax.axvspan(0, 300, color='#123A5E', alpha=0.25)
-    ax.axvspan(300, 540, color='#1B5D74', alpha=0.20)
-    ax.axvspan(540, 577, color='#2E4E6F', alpha=0.22)
-    ax.text(75, y.max()*0.96, 'BURST DATA', color='#AFC4E8', fontsize=8, fontweight='bold')
-    ax.text(360, y.max()*0.96, 'TRAINING SEQUENCE', color='#AFC4E8', fontsize=8, fontweight='bold')
-    ax.text(545, y.max()*0.96, 'GUARD', color='#AFC4E8', fontsize=8, fontweight='bold')
-    ax.set_title('ANÁLISIS TEMPORAL DE LA VARIACIÓN DE SEÑAL', loc='left', fontsize=13, fontweight='bold')
+    ax.axvspan(0, split_1, color='#123A5E', alpha=0.25)
+    ax.axvspan(split_1, split_2, color='#1B5D74', alpha=0.20)
+    ax.axvspan(split_2, timeslot_us, color='#2E4E6F', alpha=0.22)
+    ax.text(timeslot_us * 0.13, y_max * 0.96, 'BURST DATA', color='#AFC4E8', fontsize=8, fontweight='bold')
+    ax.text(timeslot_us * 0.62, y_max * 0.96, 'TRAINING SEQUENCE', color='#AFC4E8', fontsize=8, fontweight='bold')
+    ax.text(timeslot_us * 0.94, y_max * 0.96, 'GUARD', color='#AFC4E8', fontsize=8, fontweight='bold')
+    ax.set_title(f'ANÁLISIS TEMPORAL DE LA VARIACIÓN DE SEÑAL ({timeslot_us:.0f} µs)', loc='left', fontsize=13, fontweight='bold')
     ax.set_xlabel('TIME (µs)')
     ax.set_ylabel('AMP. NORM.')
-    ax.set_xlim(0, 577)
+    ax.set_xlim(0, timeslot_us)
     ax.axhline(1.0, linestyle='--', color='#7ED7FF', alpha=0.5)
     return fig
 
@@ -51,10 +55,36 @@ def figure_noise(df: pd.DataFrame):
     return fig
 
 
-def figure_cluster_map():
+def figure_cluster_map(cluster_size: int, cell_radius_km: float):
     fig, ax = plt.subplots(figsize=(8, 7))
     _dark_axes(fig, ax)
-    ax.set_title('MAPEO DE CLÚSTER (N=4)', loc='left', fontsize=13, fontweight='bold')
+    ax.set_title(f'MAPEO DE CLÚSTER (N={cluster_size})', loc='left', fontsize=13, fontweight='bold')
+
+    if cluster_size != 4:
+        ax.text(
+            0.5,
+            0.56,
+            'Visualización geométrica disponible\nsolo para clúster N=4',
+            ha='center',
+            va='center',
+            color='#F2F7FF',
+            fontsize=16,
+            fontweight='bold',
+            transform=ax.transAxes,
+        )
+        ax.text(
+            0.5,
+            0.38,
+            f'Configuración actual: N={cluster_size}, R={cell_radius_km:.1f} km',
+            ha='center',
+            va='center',
+            color='#C7D5F2',
+            fontsize=11,
+            transform=ax.transAxes,
+        )
+        ax.set_xticks([])
+        ax.set_yticks([])
+        return fig
 
     # pattern of repeating 4-cell cluster across a hex layout
     cell_colors = {
@@ -78,8 +108,8 @@ def figure_cluster_map():
         ax.add_patch(hexagon)
         ax.text(x, y, f'Cell {lab}', ha='center', va='center', color='#08213A', fontsize=9, fontweight='bold')
 
-    ax.text(1.95, 1.95, 'Cell Radius\nR=1.5 km', color='#C7D5F2', fontsize=9)
-    ax.text(1.95, -1.9, 'Reuse pattern\nN=4', color='#C7D5F2', fontsize=9)
+    ax.text(1.95, 1.95, f'Cell Radius\nR={cell_radius_km:.1f} km', color='#C7D5F2', fontsize=9)
+    ax.text(1.95, -1.9, f'Reuse pattern\nN={cluster_size}', color='#C7D5F2', fontsize=9)
     ax.set_xlim(-2.4, 2.8)
     ax.set_ylim(-2.6, 2.6)
     ax.set_aspect('equal')
@@ -88,7 +118,7 @@ def figure_cluster_map():
     return fig
 
 
-def figure_carrier_distribution(plan_df: pd.DataFrame, logical_df: pd.DataFrame):
+def figure_carrier_distribution(plan_df: pd.DataFrame, logical_df: pd.DataFrame, total_carriers: int):
     bcch = logical_df[logical_df['carrier_role'].str.contains('BCCH')].groupby('cell').size()
     tch = logical_df[logical_df['carrier_role'].str.contains('TCH')].groupby('cell').size()
     cells = plan_df['cell'].tolist()
@@ -99,7 +129,7 @@ def figure_carrier_distribution(plan_df: pd.DataFrame, logical_df: pd.DataFrame)
     _dark_axes(fig, ax)
     ax.bar(cells, bcch_vals, label='BCCH', color='#7EE6FF')
     ax.bar(cells, tch_vals, bottom=bcch_vals, label='TCH', color='#278DFF')
-    ax.set_title('DISTRIBUCIÓN DE PORTADORAS (24 CH)', loc='left', fontsize=12, fontweight='bold')
+    ax.set_title(f'DISTRIBUCIÓN DE PORTADORAS ({total_carriers} CH)', loc='left', fontsize=12, fontweight='bold')
     ax.set_xlabel('Cell ID')
     ax.set_ylabel('Número de canales')
     ax.legend(facecolor='#0E1B2E', edgecolor='#2D4060', labelcolor='#DDE9FF')

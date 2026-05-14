@@ -34,9 +34,10 @@ def save_fading_plot(df: pd.DataFrame, path: Path) -> None:
     ax.plot(df["time_us"], df["envelope_normalized"])
     model = df["model"].iloc[0]
     doppler = df["doppler_hz"].iloc[0]
+    timeslot_us = df["time_us"].max()
     ax.set_xlabel("Tiempo dentro del timeslot (µs)")
     ax.set_ylabel("Envolvente normalizada")
-    ax.set_title(f"Fading {model} durante 577 µs — fD={doppler:.2f} Hz")
+    ax.set_title(f"Fading {model} durante {timeslot_us:.0f} µs — fD={doppler:.2f} Hz")
     ax.grid(True)
     fig.tight_layout()
     fig.savefig(path, dpi=200)
