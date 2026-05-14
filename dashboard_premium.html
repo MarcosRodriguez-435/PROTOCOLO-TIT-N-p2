@@ -8,6 +8,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es2015,es2017,es2020,es2021"></script>
     <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -16,17 +19,19 @@
         }
 
         :root {
-            --primary-dark: #0a0e1a;
-            --secondary-dark: #1a2847;
-            --tertiary-dark: #243759;
-            --cian-bright: #00d4ff;
-            --cian-subtle: #0099cc;
+            --primary-dark: #07101d;
+            --secondary-dark: #12233e;
+            --tertiary-dark: #1f3a63;
+            --cian-bright: #65e7ff;
+            --cian-subtle: #3eb4d1;
             --white-pure: #ffffff;
-            --white-soft: #e8f1ff;
-            --blue-accent: #2563eb;
-            --grid-color: rgba(0, 212, 255, 0.05);
-            --border-color: rgba(0, 212, 255, 0.15);
-            --glow-color: rgba(0, 212, 255, 0.3);
+            --white-soft: #e2efff;
+            --blue-accent: #4b7dff;
+            --amber-accent: #ffd36a;
+            --green-accent: #88ffb3;
+            --grid-color: rgba(101, 231, 255, 0.05);
+            --border-color: rgba(101, 231, 255, 0.18);
+            --glow-color: rgba(101, 231, 255, 0.34);
         }
 
         html {
@@ -36,7 +41,7 @@
         body {
             background: var(--primary-dark);
             color: var(--white-soft);
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+            font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
             overflow-x: hidden;
             position: relative;
         }
@@ -102,6 +107,7 @@
         }
 
         .nav-title {
+            font-family: 'Rajdhani', sans-serif;
             font-size: 16px;
             font-weight: 700;
             color: var(--white-pure);
@@ -176,6 +182,15 @@
             animation: pulse 8s ease-in-out infinite;
         }
 
+        .hero::after {
+            content: '';
+            position: absolute;
+            inset: auto 8% 8% 8%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent 0%, rgba(101, 231, 255, 0.6) 18%, rgba(255, 211, 106, 0.65) 50%, rgba(101, 231, 255, 0.6) 82%, transparent 100%);
+            box-shadow: 0 0 20px rgba(101, 231, 255, 0.2);
+        }
+
         @keyframes pulse {
             0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
             50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.3; }
@@ -184,7 +199,7 @@
         .hero-content {
             text-align: center;
             z-index: 3;
-            max-width: 900px;
+            max-width: 1080px;
             padding: 0 2rem;
             animation: fadeInUp 1.2s ease-out;
         }
@@ -214,6 +229,7 @@
         }
 
         .hero-title {
+            font-family: 'Rajdhani', sans-serif;
             font-size: 3.5rem;
             font-weight: 800;
             color: var(--white-pure);
@@ -238,6 +254,39 @@
             letter-spacing: 0.5px;
         }
 
+        .hero-panel {
+            background: linear-gradient(135deg, rgba(8, 22, 38, 0.84) 0%, rgba(20, 41, 70, 0.68) 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 2.25rem 2rem 2rem 2rem;
+            box-shadow: 0 32px 80px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255,255,255,0.04);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-panel::before {
+            content: '';
+            position: absolute;
+            top: -20%;
+            right: -5%;
+            width: 260px;
+            height: 260px;
+            background: radial-gradient(circle, rgba(101, 231, 255, 0.18) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-note {
+            margin: 1.25rem auto 0 auto;
+            max-width: 780px;
+            padding: 1rem 1.2rem;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 211, 106, 0.25);
+            background: rgba(255, 211, 106, 0.06);
+            color: var(--white-soft);
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+
         .hero-metrics {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -256,6 +305,17 @@
             padding: 1rem;
             text-align: center;
             animation: slideInUp 0.8s ease-out both;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-box::after {
+            content: '';
+            position: absolute;
+            inset: 0 auto 0 0;
+            width: 4px;
+            background: linear-gradient(180deg, var(--cian-bright), transparent);
+            opacity: 0.8;
         }
 
         .metric-box:nth-child(1) { animation-delay: 0.1s; }
@@ -345,10 +405,65 @@
         }
 
         section h2 {
+            font-family: 'Rajdhani', sans-serif;
             font-size: 2.5rem;
             margin-bottom: 1rem;
             color: var(--white-pure);
             letter-spacing: -0.5px;
+        }
+
+        .section-kicker {
+            display: inline-block;
+            margin-bottom: 0.8rem;
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--cian-bright);
+        }
+
+        .summary-strip {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 1.25rem;
+            margin-top: -2.5rem;
+            padding: 0 3rem;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+            position: relative;
+            z-index: 4;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, rgba(10, 23, 41, 0.95) 0%, rgba(18, 35, 62, 0.88) 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 1.25rem;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.28);
+        }
+
+        .summary-label {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: var(--cian-bright);
+            margin-bottom: 0.65rem;
+        }
+
+        .summary-value {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.9rem;
+            font-weight: 700;
+            color: var(--white-pure);
+            line-height: 1;
+            margin-bottom: 0.45rem;
+        }
+
+        .summary-text {
+            font-size: 0.92rem;
+            line-height: 1.6;
+            opacity: 0.88;
         }
 
         section p {
@@ -534,6 +649,7 @@
         }
 
         .chart-title {
+            font-family: 'Rajdhani', sans-serif;
             font-size: 1.25rem;
             font-weight: 700;
             color: var(--white-pure);
@@ -587,6 +703,18 @@
             background: rgba(0, 212, 255, 0.05);
         }
 
+        .data-callout {
+            margin-top: 1.5rem;
+            padding: 1.4rem 1.5rem;
+            border-radius: 16px;
+            background: linear-gradient(135deg, rgba(255, 211, 106, 0.08) 0%, rgba(101, 231, 255, 0.08) 100%);
+            border: 1px solid rgba(255, 211, 106, 0.22);
+        }
+
+        .data-callout strong {
+            color: var(--white-pure);
+        }
+
         /* ==================== FOOTER ==================== */
         footer {
             background: linear-gradient(180deg, rgba(26, 40, 71, 0.6) 0%, rgba(10, 14, 26, 0.9) 100%);
@@ -628,6 +756,12 @@
                 grid-template-columns: repeat(2, 1fr);
             }
 
+            .summary-strip {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                padding: 0 2rem;
+                margin-top: -1.5rem;
+            }
+
             section {
                 padding: 3rem 2rem;
             }
@@ -663,6 +797,12 @@
             .hero-metrics {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 1rem;
+            }
+
+            .summary-strip {
+                grid-template-columns: 1fr;
+                padding: 0 1rem;
+                margin-top: -1rem;
             }
 
             section {
@@ -732,40 +872,70 @@
         <!-- Hero Section -->
         <section class="hero" id="hero">
             <div class="hero-content">
-                <div class="hero-badge">🎖️ Proyecto de Investigación Académica</div>
-                <h1 class="hero-title">Red Táctica GSM/EDGE<br>Entornos de Misión Crítica</h1>
-                <p class="hero-subtitle">Diseño ingenieril de una red de comunicaciones robusto para operaciones tácticas con control espectral certificado y voz de misión crítica</p>
-                
-                <div class="hero-metrics">
-                    <div class="metric-box">
-                        <span class="metric-value">900</span>
-                        <span class="metric-label">MHz</span>
-                    </div>
-                    <div class="metric-box">
-                        <span class="metric-value">250</span>
-                        <span class="metric-label">km/h</span>
-                    </div>
-                    <div class="metric-box">
-                        <span class="metric-value">3.5</span>
-                        <span class="metric-label">dB SIR</span>
-                    </div>
-                    <div class="metric-box">
-                        <span class="metric-value">24</span>
-                        <span class="metric-label">ARFCN</span>
-                    </div>
-                </div>
+                <div class="hero-panel">
+                    <div class="hero-badge">Proyecto académico de ingeniería radioeléctrica</div>
+                    <h1 class="hero-title">Protocolo Titán<br>Dashboard Técnico GSM/EDGE</h1>
+                    <p class="hero-subtitle">Evaluación profesional de movilidad extrema, planificación espectral N=4 y certificación instrumental RED para una red táctica en GSM-900.</p>
 
-                <div class="cta-buttons">
-                    <a href="#introduccion" class="btn btn-primary">Explorar Misión</a>
-                    <a href="#resultados" class="btn btn-secondary">Ver Resultados</a>
+                    <div class="hero-metrics">
+                        <div class="metric-box">
+                            <span class="metric-value">900</span>
+                            <span class="metric-label">MHz · GSM-900</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-value">250</span>
+                            <span class="metric-label">km/h · velocidad crítica</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-value">13.8</span>
+                            <span class="metric-label">dB · C/I teórica</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-value">24</span>
+                            <span class="metric-label">ARFCN · plan total</span>
+                        </div>
+                    </div>
+
+                    <div class="hero-note">
+                        El sistema analizado mantiene viabilidad temporal de ráfaga en el convoy y un margen co-canal suficiente en el campamento, siempre que la red se opere con disciplina espectral, BCCH estable e instrumentación ajustada por RBW.
+                    </div>
+
+                    <div class="cta-buttons">
+                        <a href="#introduccion" class="btn btn-primary">Explorar misión</a>
+                        <a href="#resultados" class="btn btn-secondary">Ver resultados</a>
+                    </div>
                 </div>
             </div>
         </section>
 
+        <div class="summary-strip">
+            <div class="summary-card">
+                <div class="summary-label">Escenario A</div>
+                <div class="summary-value">2.03 ms</div>
+                <div class="summary-text">Tiempo de coherencia a 250 km/h. Sigue siendo mayor que el timeslot GSM de 577 µs, pero con margen reducido.</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Escenario B</div>
+                <div class="summary-value">5.20 km</div>
+                <div class="summary-text">Distancia de reutilización calculada para `R = 1.5 km` y `N = 4` en el campamento base.</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Instrumentación</div>
+                <div class="summary-value">-130.51 dBm</div>
+                <div class="summary-text">DANL aproximado para `RBW = 10 kHz` y `NF = 6 dB`, útil para medidas más sensibles.</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Dictamen</div>
+                <div class="summary-value">+4.80 dB</div>
+                <div class="summary-text">Margen estimado de `C/I` sobre el umbral GSM de 9 dB en la configuración docente planteada.</div>
+            </div>
+        </div>
+
         <!-- Introduction Section -->
         <section id="introduccion">
+            <div class="section-kicker">Mission Brief</div>
             <h2>Briefing de Misión</h2>
-            <p>Sistema táctico de comunicaciones GSM/EDGE diseñado para operaciones en entornos de movilidad extrema con control riguroso del espectro electromagnético y certificación según Directiva RED.</p>
+            <p>Sistema táctico de comunicaciones GSM/EDGE planteado como caso de ingeniería aplicada: debe soportar movilidad extrema en un convoy ferroviario y, al mismo tiempo, demostrar planificación celular y criterio metrológico en un campamento base.</p>
             
             <div class="intro-grid">
                 <div class="card fade-in stagger-1">
@@ -791,7 +961,7 @@
                 <div class="card fade-in stagger-5">
                     <div class="card-icon">⚙️</div>
                     <div class="card-title">Control Espectral</div>
-                    <div class="card-text">Planificación frecuencial rigurosa, reutilización de clúster N=4, análisis de interferencia co-canal y SIR.</div>
+                    <div class="card-text">Planificación frecuencial rigurosa, reutilización de clúster N=4, análisis de interferencia co-canal y evaluación cuantitativa de C/I.</div>
                 </div>
                 <div class="card fade-in stagger-5">
                     <div class="card-icon">✅</div>
@@ -803,6 +973,7 @@
 
         <!-- Estado del Arte -->
         <section id="estado-arte">
+            <div class="section-kicker">Technical Basis</div>
             <h2>Estado del Arte - Fundamentos Técnicos</h2>
             <p>Principios fundamentales de GSM/EDGE, canales físicos, fading e instrumentación espectral.</p>
 
@@ -835,7 +1006,7 @@
                         </div>
 
                         <p style="margin-top: 1.5rem;"><strong>Eficiencia Espectral Combinada</strong></p>
-                        <p>GSM logra una eficiencia espectral de 1.35 bps/Hz mediante la combinación de FDMA y TDMA, permitiendo approximately 8 usuarios por 200 kHz.</p>
+                        <p>La combinación FDMA/TDMA permite estructurar el acceso radio con alta robustez temporal y espectral, asignando 8 timeslots por portadora de 200 kHz con separación clara entre canales físicos y lógicos.</p>
                     </div>
                 </div>
             </div>
@@ -915,7 +1086,7 @@
 
                         <div class="formula-box">
                             <div class="formula-label">Tiempo de Coherencia (aprox.)</div>
-                            <div>$$T_c \approx \frac{0.423}{\pi \cdot f_d}$$</div>
+                            <div>$$T_c \approx \frac{0.423}{f_d}$$</div>
                         </div>
 
                         <p style="margin-top: 1rem;"><strong>Interpretación Táctica</strong></p>
@@ -938,10 +1109,10 @@
 
                         <div class="formula-box">
                             <div class="formula-label">Piso de Ruido vs RBW</div>
-                            <div>$$N_f = NF + 10\log_{10}(RBW) + 10\log_{10}(T)$$</div>
+                            <div>$$N(dBm) = -174\,\text{dBm/Hz} + 10\log_{10}(RBW) + NF$$</div>
                         </div>
 
-                        <p style="margin-top: 1rem;">donde NF es figura de ruido del receptor (dB), RBW es ancho de banda resolución, T es tiempo de integración.</p>
+                        <p style="margin-top: 1rem;">donde NF es la figura de ruido del analizador y RBW es el ancho de banda de resolución. Si se desea aproximar el DANL visualizado, puede añadirse una corrección típica de detector logarítmico de 2,51 dB.</p>
 
                         <p style="margin-top: 1.5rem;"><strong>Estándares de Medida</strong></p>
                         <ul style="margin: 1rem 0 1rem 2rem; line-height: 1.8;">
@@ -960,13 +1131,14 @@
         <!-- Metodología -->
         <section id="metodologia">
             <h2>Metodología de Ingeniería</h2>
-            <p>Proceso de cálculo y validación de parámetros de red táctica.</p>
+            <div class="section-kicker">Engineering Workflow</div>
+            <p>Secuencia reproducible de cálculo, validación y defensa técnica de resultados, alineada con los requerimientos del reto docente.</p>
 
             <h3 style="margin: 2rem 0 1rem 0; font-size: 1.3rem; color: var(--white-pure);">1️⃣ Configuración de GSM</h3>
             
             <div class="formula-box">
                 <div class="formula-label">Frecuencia Portadora</div>
-                <div>$$f_c = 900 \text{ MHz (Band IV GSM)}$$</div>
+                <div>$$f_c = 900 \text{ MHz (GSM-900)}$$</div>
             </div>
 
             <div class="formula-box">
@@ -1019,8 +1191,8 @@
             </div>
 
             <div class="formula-box">
-                <div class="formula-label">Protección Co-canal (SIR)</div>
-                <div>$$SIR = \frac{P_{desired}}{P_{interferer}}$$</div>
+                <div class="formula-label">Protección Co-canal (C/I)</div>
+                <div>$$\frac{C}{I} \approx \frac{(D/R)^n}{6}, \quad n = 4$$</div>
             </div>
 
             <div class="formula-box">
@@ -1120,14 +1292,19 @@
 
         <!-- Escenario B -->
         <section id="escenario-b">
+            <div class="section-kicker">Spectrum & RED</div>
             <h2>Escenario B: Campamento Base - Planificación Frecuencial y RED</h2>
             <p>Diseño de red celular táctica con 4 celdas, planificación de 24 ARFCN y certificación RED mediante análisis de ruido según RBW.</p>
+
+            <div class="data-callout">
+                <strong>Lectura ingenieril:</strong> la configuración `N = 4` reparte 24 portadoras en 6 portadoras por celda, da `D/R = 3.464`, `D ≈ 5.20 km` y una `C/I ≈ 13.8 dB`. Esto deja un margen aproximado de `+4.8 dB` sobre el umbral GSM de referencia de `9 dB`.
+            </div>
 
             <h3 style="margin: 2rem 0 1rem 0; font-size: 1.3rem; color: var(--white-pure);">Distribución de Frecuencias (N=4)</h3>
 
             <div class="chart-grid">
                 <div class="chart-panel">
-                    <div class="chart-title">🗺️ Mapa de Clúster Frecuencial</div>
+                    <div class="chart-title">🗺️ Geometría del Clúster N=4</div>
                     <div class="chart-container">
                         <canvas id="clusterMap"></canvas>
                     </div>
@@ -1208,6 +1385,7 @@
                             <th>RBW</th>
                             <th>Figura Ruido</th>
                             <th>Piso Ruido</th>
+                            <th>DANL aprox.</th>
                             <th>Delta vs 100kHz</th>
                             <th>Aplicación</th>
                         </tr>
@@ -1217,6 +1395,7 @@
                             <td><strong>100 kHz</strong></td>
                             <td>6.0 dB</td>
                             <td>-118.0 dBm</td>
+                            <td>-120.51 dBm</td>
                             <td>0.0 dB</td>
                             <td>Barridos rápidos</td>
                         </tr>
@@ -1224,6 +1403,7 @@
                             <td><strong>10 kHz</strong></td>
                             <td>6.0 dB</td>
                             <td>-128.0 dBm</td>
+                            <td>-130.51 dBm</td>
                             <td>-10.0 dB</td>
                             <td>Medidas precisas</td>
                         </tr>
@@ -1231,6 +1411,7 @@
                             <td><strong>1 kHz</strong></td>
                             <td>6.0 dB</td>
                             <td>-138.0 dBm</td>
+                            <td>-140.51 dBm</td>
                             <td>-20.0 dB</td>
                             <td>Ultra-precisas</td>
                         </tr>
@@ -1239,12 +1420,13 @@
             </div>
 
             <p style="margin-top: 1.5rem; padding: 1.5rem; background: rgba(26, 40, 71, 0.6); border-left: 3px solid var(--cian-bright); border-radius: 8px;">
-                <strong>Certificación RED:</strong> El analizador de espectro con RBW 10 kHz proporciona la precisión requerida para verificar conformidad con límites de emisión y detectar interferencia perjudicial en bandas adyacentes.
+                <strong>Certificación RED:</strong> `RBW = 10 kHz` ofrece un equilibrio razonable entre sensibilidad y tiempo de barrido. En este caso, el suelo de ruido térmico es `-128 dBm` y el `DANL` aproximado baja a `-130.51 dBm`, lo que mejora la visibilidad de señales débiles sin caer en barridos excesivamente lentos.
             </p>
         </section>
 
         <!-- Resultados -->
         <section id="resultados">
+            <div class="section-kicker">Operational Synthesis</div>
             <h2>Resultados - Dashboard de Operaciones</h2>
             <p>Resumen ejecutivo de parámetros de red táctica, desempeño en movilidad y certificación espectral.</p>
 
@@ -1283,7 +1465,7 @@
                     </div>
                 </div>
                 <div class="chart-panel">
-                    <div class="chart-title">🎯 Margen de Estabilidad</div>
+                    <div class="chart-title">🎯 Relación Coherencia / Timeslot</div>
                     <div class="chart-container">
                         <canvas id="stabilityChart"></canvas>
                     </div>
@@ -1294,7 +1476,7 @@
 
             <div class="chart-grid">
                 <div class="chart-panel">
-                    <div class="chart-title">📡 SIR Protección Co-canal</div>
+                    <div class="chart-title">📡 C/I de Protección Co-canal</div>
                     <div class="chart-container">
                         <canvas id="sirChart"></canvas>
                     </div>
@@ -1340,7 +1522,7 @@
                             <td><strong>Reutilización</strong></td>
                             <td>—</td>
                             <td>—</td>
-                            <td>N=4, D/R=3.46</td>
+                            <td>N=4, C/I=13.8 dB</td>
                         </tr>
                         <tr>
                             <td><strong>Piso Ruido (10kHz)</strong></td>
@@ -1355,6 +1537,7 @@
 
         <!-- Discusión y Conclusiones -->
         <section id="discusion">
+            <div class="section-kicker">Engineering Debrief</div>
             <h2>Debriefing - Análisis Técnico Integral</h2>
             <p>Evaluación de desempeño operacional, impacto de fenómenos de propagación y recomendaciones de ingeniería.</p>
 
@@ -1372,7 +1555,7 @@
                         <p>En entorno montañoso (Escenario A), predomina fading Rayleigh con componente NLOS. En campamento base (Escenario B) con visibilidad mejorada, la componente Rician reduce la profundidad de desvanecimiento. Ambos casos requieren salto de frecuencia (frequency hopping) para mitigar efectos.</p>
 
                         <h4 style="color: var(--cian-bright); margin-bottom: 1rem; margin-top: 1.5rem;">3. Reutilización Frecuencial</h4>
-                        <p>Configuración N=4 con relación D/R=3.464 proporciona excelente compromisointerferencia/capacidad. La separación de 5.2 km entre celdas co-canal asegura SIR ≥ 9 dB bajo condiciones normales de propagación.</p>
+                        <p>Configuración N=4 con relación D/R=3.464 proporciona un compromiso sólido entre capacidad e interferencia. Con el modelo hexagonal aproximado, resulta C/I ≈ 13.8 dB, con un margen de unos 4.8 dB sobre el umbral GSM orientativo de 9 dB.</p>
 
                         <h4 style="color: var(--cian-bright); margin-bottom: 1rem; margin-top: 1.5rem;">4. Certificación RED</h4>
                         <p>La instrumentación a RBW variable permite validar conformidad espectral: RBW 100 kHz para análisis rápido, RBW 10 kHz para medidas precisas de portadora, RBW 1 kHz para detección de armónicos y espurias.</p>
@@ -1390,7 +1573,7 @@
                         <ul style="line-height: 2; margin-left: 2rem;">
                             <li><strong>Codificación Robusta:</strong> Usar esquema CS-4 (convolutional half-rate) a velocidades altas para compensar desvanecimiento rápido.</li>
                             <li><strong>Frequency Hopping:</strong> Implementar FHSS (Frequency Hopping Spread Spectrum) de acuerdo a estándar 3GPP, especialmente en Escenario A.</li>
-                            <li><strong>Control Potencia Adaptativo:</strong> DPC (Dynamic Power Control) cada timeslot para mantener SIR objetivo.</li>
+                            <li><strong>Control Potencia Adaptativo:</strong> DPC (Dynamic Power Control) cada timeslot para preservar margen de C/I y estabilidad del BCCH.</li>
                             <li><strong>Sincronización Mejorada:</strong> Incluir algoritmo de detección de Doppler para sincronización de fase en alta velocidad.</li>
                             <li><strong>Monitoreo Espectral Continuo:</strong> Realizar barridos periódicos RBW 10 kHz para detección temprana de interferencia.</li>
                             <li><strong>Reserva de Capacidad:</strong> Preasignar 25% de recursos como margen de seguridad para operaciones tácticas impredecibles.</li>
@@ -1438,7 +1621,7 @@
 
             <div style="margin-top: 3rem; padding: 2rem; background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(37, 99, 235, 0.05) 100%); border: 1px solid var(--border-color); border-radius: 12px; border-left: 4px solid var(--cian-bright);">
                 <h3 style="color: var(--cian-bright); margin-bottom: 1rem;">🎯 Conclusión Final</h3>
-                <p>El diseño de red táctica GSM/EDGE presentado demuestra viabilidad técnica para operaciones de misión crítica en entornos de movilidad extrema, desvanecimiento multitrayecto y demanda de certificación espectral. La combinación de análisis riguroso de propagación, planificación frecuencial sofisticada e instrumentación avanzada asegura desempeño operacional confiable bajo condiciones tácticas desafiantes.</p>
+                <p>El diseño de red táctica GSM/EDGE presentado resulta técnicamente defendible para el reto planteado: la ráfaga GSM conserva viabilidad temporal incluso en movilidad elevada, la planificación con N=4 mantiene margen co-canal suficiente y la instrumentación ajustada por RBW permite argumentar conformidad espectral con mejor trazabilidad metrológica.</p>
             </div>
         </section>
     </main>
@@ -1452,15 +1635,29 @@
 
     <script>
         // Chart.js Configuration
-        Chart.defaults.color = '#a9beda';
-        Chart.defaults.borderColor = 'rgba(0, 212, 255, 0.15)';
-        Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif';
+        Chart.defaults.color = '#c2d7f4';
+        Chart.defaults.borderColor = 'rgba(101, 231, 255, 0.18)';
+        Chart.defaults.font.family = 'IBM Plex Sans, Segoe UI, sans-serif';
 
         // Dark mode for charts
-        const chartBg = 'rgba(26, 40, 71, 0.4)';
-        const gridColor = 'rgba(0, 212, 255, 0.1)';
-        const primaryColor = '#00d4ff';
-        const accentColor = '#2563eb';
+        const chartBg = 'rgba(18, 35, 62, 0.5)';
+        const gridColor = 'rgba(101, 231, 255, 0.1)';
+        const primaryColor = '#65e7ff';
+        const accentColor = '#4b7dff';
+        const amberColor = '#ffd36a';
+        const greenColor = '#88ffb3';
+        const fadingTraces = {
+            low: {
+                labels: [0.0, 18.07, 36.13, 54.2, 72.27, 90.33, 108.4, 126.47, 144.53, 162.6, 180.67, 198.73, 216.8, 234.86, 252.93, 271.0, 289.06, 307.13, 325.2, 343.26, 361.33, 379.4, 397.46, 415.53, 433.6, 451.66, 469.73, 487.8, 505.86, 523.93, 542.0, 560.06],
+                rayleigh: [1.4764, 3.0871, 0.7134, 0.7934, 1.0366, 0.9943, 1.1068, 1.1846, 1.2141, 0.5145, 0.6255, 0.3807, 0.4631, 0.9935, 1.4639, 0.7748, 0.3367, 0.1829, 0.5924, 1.1158, 1.1813, 0.6521, 1.6734, 0.6519, 1.7375, 0.3182, 2.1735, 0.4033, 1.5987, 1.4039, 0.5297, 0.6473],
+                rician: [0.9295, 1.1007, 1.0513, 1.048, 1.0523, 1.031, 0.9403, 1.1648, 0.927, 0.8601, 0.8795, 0.9292, 0.9152, 1.2066, 1.0618, 1.1329, 0.9828, 1.1057, 0.9858, 0.9999, 0.9373, 1.0367, 0.8646, 0.9173, 0.9725, 0.8438, 0.9657, 0.8795, 0.9146, 1.0567, 1.2437, 1.0677]
+            },
+            high: {
+                labels: [0.0, 18.07, 36.13, 54.2, 72.27, 90.33, 108.4, 126.47, 144.53, 162.6, 180.67, 198.73, 216.8, 234.86, 252.93, 271.0, 289.06, 307.13, 325.2, 343.26, 361.33, 379.4, 397.46, 415.53, 433.6, 451.66, 469.73, 487.8, 505.86, 523.93, 542.0, 560.06],
+                rayleigh: [0.7702, 0.2077, 1.3534, 0.1557, 1.6759, 1.0297, 1.6548, 1.37, 0.319, 0.733, 1.1678, 1.8771, 1.3712, 0.9745, 1.0062, 0.5784, 1.4175, 0.44, 0.9116, 0.9573, 1.3384, 0.9115, 0.8217, 0.3507, 0.5374, 0.8275, 1.3099, 0.7957, 0.9239, 1.2618, 2.0798, 0.6342],
+                rician: [1.0278, 0.928, 1.0712, 1.0654, 1.2159, 1.0635, 1.0721, 0.9918, 0.8985, 0.9508, 0.9081, 0.9215, 0.9547, 0.9654, 0.9978, 0.6942, 0.8755, 0.8307, 1.0036, 1.1487, 1.0874, 1.0966, 1.0562, 0.898, 1.1474, 1.0407, 0.9058, 0.9971, 1.1822, 0.9191, 1.0558, 1.0509]
+            }
+        };
 
         // Initialize Charts
         function initCharts() {
@@ -1520,12 +1717,20 @@
                         tension: 0.4,
                         pointBackgroundColor: primaryColor,
                         pointRadius: 6
+                    }, {
+                        label: 'Timeslot GSM',
+                        data: [0.577, 0.577],
+                        borderColor: amberColor,
+                        borderDash: [6, 5],
+                        fill: false,
+                        tension: 0,
+                        pointRadius: 0
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    plugins: { legend: { position: 'top' } },
                     scales: { y: { grid: { color: gridColor } } }
                 }
             });
@@ -1552,7 +1757,7 @@
 
             // Fading Low
             const fadingLowCtx = document.getElementById('fadingLow');
-            const fadingLowData = generateFadingData(41.67, 'low');
+            const fadingLowData = fadingTraces.low;
             new Chart(fadingLowCtx, {
                 type: 'line',
                 data: {
@@ -1580,13 +1785,16 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: { legend: { position: 'top' } },
-                    scales: { y: { grid: { color: gridColor }, beginAtZero: true, max: 4 } }
+                    scales: {
+                        x: { title: { display: true, text: 'Tiempo dentro del timeslot (µs)' }, grid: { color: gridColor } },
+                        y: { title: { display: true, text: 'Envolvente normalizada' }, grid: { color: gridColor }, beginAtZero: true, max: 4 }
+                    }
                 }
             });
 
             // Fading High
             const fadingHighCtx = document.getElementById('fadingHigh');
-            const fadingHighData = generateFadingData(208.33, 'high');
+            const fadingHighData = fadingTraces.high;
             new Chart(fadingHighCtx, {
                 type: 'line',
                 data: {
@@ -1614,26 +1822,32 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: { legend: { position: 'top' } },
-                    scales: { y: { grid: { color: gridColor }, beginAtZero: true, max: 4 } }
+                    scales: {
+                        x: { title: { display: true, text: 'Tiempo dentro del timeslot (µs)' }, grid: { color: gridColor } },
+                        y: { title: { display: true, text: 'Envolvente normalizada' }, grid: { color: gridColor }, beginAtZero: true, max: 4 }
+                    }
                 }
             });
 
             // Cluster Map
             new Chart(document.getElementById('clusterMap'), {
-                type: 'doughnut',
+                type: 'bubble',
                 data: {
-                    labels: ['Celda A', 'Celda B', 'Celda C', 'Celda D'],
-                    datasets: [{
-                        data: [6, 6, 6, 6],
-                        backgroundColor: [primaryColor, accentColor, '#6cffb2', '#ffd966'],
-                        borderColor: '#0a0e1a',
-                        borderWidth: 2
-                    }]
+                    datasets: [
+                        { label: 'Celda A', data: [{x: 0.0, y: 0.0, r: 22}], backgroundColor: primaryColor },
+                        { label: 'Celda B', data: [{x: 1.1, y: 0.7, r: 22}], backgroundColor: accentColor },
+                        { label: 'Celda C', data: [{x: 1.1, y: -0.7, r: 22}], backgroundColor: greenColor },
+                        { label: 'Celda D', data: [{x: -1.1, y: 0.0, r: 22}], backgroundColor: amberColor }
+                    ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom' } }
+                    plugins: { legend: { position: 'bottom' } },
+                    scales: {
+                        x: { min: -2, max: 2, grid: { color: gridColor }, ticks: { display: false } },
+                        y: { min: -1.5, max: 1.5, grid: { color: gridColor }, ticks: { display: false } }
+                    }
                 }
             });
 
@@ -1642,18 +1856,26 @@
                 type: 'bar',
                 data: {
                     labels: ['A', 'B', 'C', 'D'],
-                    datasets: [{
-                        label: 'ARFCN Asignados',
-                        data: [6, 6, 6, 6],
-                        backgroundColor: [primaryColor, accentColor, '#6cffb2', '#ffd966'],
-                        borderRadius: 8
-                    }]
+                    datasets: [
+                        {
+                            label: 'BCCH',
+                            data: [1, 1, 1, 1],
+                            backgroundColor: amberColor,
+                            borderRadius: 8
+                        },
+                        {
+                            label: 'TCH',
+                            data: [5, 5, 5, 5],
+                            backgroundColor: primaryColor,
+                            borderRadius: 8
+                        }
+                    ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true, max: 8 } }
+                    plugins: { legend: { position: 'top' } },
+                    scales: { x: { stacked: true }, y: { beginAtZero: true, max: 8, stacked: true, grid: { color: gridColor } } }
                 }
             });
 
@@ -1662,21 +1884,34 @@
                 type: 'line',
                 data: {
                     labels: ['100 kHz', '10 kHz', '1 kHz'],
-                    datasets: [{
-                        label: 'dBm',
-                        data: [-118, -128, -138],
-                        borderColor: '#6cffb2',
-                        backgroundColor: 'rgba(108, 255, 178, 0.1)',
-                        fill: true,
-                        tension: 0.4,
-                        pointBackgroundColor: '#6cffb2',
-                        pointRadius: 6
-                    }]
+                    datasets: [
+                        {
+                            label: 'Suelo térmico + NF',
+                            data: [-118, -128, -138],
+                            borderColor: greenColor,
+                            backgroundColor: 'rgba(136, 255, 179, 0.1)',
+                            fill: true,
+                            tension: 0.35,
+                            pointBackgroundColor: greenColor,
+                            pointRadius: 6
+                        },
+                        {
+                            label: 'DANL aprox.',
+                            data: [-120.51, -130.51, -140.51],
+                            borderColor: amberColor,
+                            backgroundColor: 'rgba(255, 211, 106, 0.06)',
+                            fill: false,
+                            tension: 0.35,
+                            pointBackgroundColor: amberColor,
+                            pointRadius: 5,
+                            borderDash: [6, 5]
+                        }
+                    ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    plugins: { legend: { position: 'top' } },
                     scales: { y: { grid: { color: gridColor } } }
                 }
             });
@@ -1703,18 +1938,30 @@
 
             // Synthesis Chart
             new Chart(document.getElementById('synthesisChart'), {
-                type: 'bubble',
+                type: 'scatter',
                 data: {
                     datasets: [
                         {
                             label: '50 km/h',
-                            data: [{x: 41.67, y: 10.15, r: 15}],
+                            data: [{x: 41.67, y: 10.15}],
+                            pointRadius: 10,
                             backgroundColor: 'rgba(108, 255, 178, 0.6)'
                         },
                         {
                             label: '250 km/h',
-                            data: [{x: 208.33, y: 2.03, r: 15}],
+                            data: [{x: 208.33, y: 2.03}],
+                            pointRadius: 10,
                             backgroundColor: 'rgba(255, 217, 102, 0.6)'
+                        },
+                        {
+                            label: 'Timeslot GSM',
+                            type: 'line',
+                            data: [{x: 0, y: 0.577}, {x: 220, y: 0.577}],
+                            borderColor: amberColor,
+                            borderDash: [6, 5],
+                            pointRadius: 0,
+                            fill: false,
+                            tension: 0
                         }
                     ]
                 },
@@ -1731,78 +1978,113 @@
 
             // Stability Chart
             new Chart(document.getElementById('stabilityChart'), {
-                type: 'radar',
+                type: 'bar',
                 data: {
-                    labels: ['50 km/h', '100 km/h', '150 km/h', '200 km/h', '250 km/h'],
+                    labels: ['50 km/h', '250 km/h'],
                     datasets: [{
                         label: 'Margen de Estabilidad (Tc/Ts)',
-                        data: [17.59, 8.79, 5.86, 4.40, 3.52],
+                        data: [17.59, 3.52],
                         borderColor: primaryColor,
                         backgroundColor: 'rgba(0, 212, 255, 0.1)',
                         pointBackgroundColor: primaryColor,
-                        fill: true
+                        borderRadius: 8
+                    }, {
+                        label: 'Umbral de estabilidad',
+                        type: 'line',
+                        data: [1.0, 1.0],
+                        borderColor: amberColor,
+                        borderDash: [6, 5],
+                        pointRadius: 0,
+                        fill: false,
+                        tension: 0
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: { legend: { position: 'top' } },
-                    scales: { r: { beginAtZero: true, max: 20 } }
+                    scales: { y: { beginAtZero: true, max: 20, grid: { color: gridColor } } }
                 }
             });
 
-            // SIR Chart
+            // C/I Chart
             new Chart(document.getElementById('sirChart'), {
                 type: 'bar',
                 data: {
                     labels: ['Celda A', 'Celda B', 'Celda C', 'Celda D'],
-                    datasets: [{
-                        label: 'SIR (dB)',
-                        data: [9, 9, 9, 9],
-                        backgroundColor: primaryColor,
-                        borderRadius: 8
-                    }]
+                    datasets: [
+                        {
+                            label: 'C/I calculada (dB)',
+                            data: [13.8, 13.8, 13.8, 13.8],
+                            backgroundColor: primaryColor,
+                            borderRadius: 8
+                        },
+                        {
+                            label: 'Umbral GSM (dB)',
+                            data: [9, 9, 9, 9],
+                            type: 'line',
+                            borderColor: amberColor,
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            fill: false,
+                            tension: 0
+                        }
+                    ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true, max: 12 } }
+                    plugins: { legend: { position: 'top' } },
+                    scales: { y: { beginAtZero: true, max: 16, grid: { color: gridColor } } }
                 }
             });
 
             // Spectrum Chart
+            const arfcnLabels = Array.from({length: 24}, (_, i) => (890.2 + i * 0.2).toFixed(1));
+            const bcchBars = [-58, null, null, null, null, null, -57, null, null, null, null, null, -56, null, null, null, null, null, -58, null, null, null, null, null];
+            const tchBars = [null, -86, -84, -83, -82, -81, null, -85, -84, -83, -82, -81, null, -85, -84, -83, -82, -81, null, -85, -84, -83, -82, -81];
+            const danl10khz = Array.from({length: 24}, () => -130.51);
             new Chart(document.getElementById('spectrumChart'), {
-                type: 'line',
+                type: 'bar',
                 data: {
-                    labels: Array.from({length: 25}, (_, i) => i + 1),
-                    datasets: [{
-                        label: 'dBm',
-                        data: Array.from({length: 25}, (_, i) => -80 + Math.random() * 30 - Math.abs(i - 12) * 0.5),
-                        borderColor: primaryColor,
-                        backgroundColor: 'rgba(0, 212, 255, 0.1)',
-                        fill: true,
-                        tension: 0.2
-                    }]
+                    labels: arfcnLabels,
+                    datasets: [
+                        {
+                            label: 'BCCH estimado',
+                            data: bcchBars,
+                            backgroundColor: amberColor,
+                            borderColor: amberColor,
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'TCH estimado',
+                            data: tchBars,
+                            backgroundColor: primaryColor,
+                            borderColor: primaryColor,
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'DANL aprox. RBW 10 kHz',
+                            type: 'line',
+                            data: danl10khz,
+                            borderColor: amberColor,
+                            borderDash: [5, 5],
+                            fill: false,
+                            pointRadius: 0,
+                            tension: 0
+                        }
+                    ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { grid: { color: gridColor } } }
+                    plugins: { legend: { position: 'top' } },
+                    scales: {
+                        x: { title: { display: true, text: 'Frecuencia uplink (MHz)' }, grid: { color: gridColor } },
+                        y: { title: { display: true, text: 'Nivel (dBm)' }, grid: { color: gridColor }, min: -140, max: -40 }
+                    }
                 }
             });
-        }
-
-        function generateFadingData(doppler, speed) {
-            const time = Array.from({length: 100}, (_, i) => i / 100);
-            const rayleigh = time.map(t => Math.abs(Math.sin(2 * Math.PI * doppler * t / 100)) * Math.exp(-t));
-            const rician = time.map(t => (1.2 + Math.sin(2 * Math.PI * doppler * t / 100)) * Math.exp(-t * 0.5));
-            return {
-                labels: time.map(t => (t * 100).toFixed(1)),
-                rayleigh: rayleigh,
-                rician: rician
-            };
         }
 
         // Expandable sections

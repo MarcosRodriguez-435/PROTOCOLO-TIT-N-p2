@@ -26,16 +26,17 @@ def figure_timeslot_signal(trace: pd.DataFrame):
     x = trace['time_us'].to_numpy()
     y = trace['envelope_normalized'].to_numpy()
     timeslot_us = float(x.max()) if len(x) else 0.0
-    split_1 = timeslot_us * (300.0 / 577.0) if timeslot_us else 0.0
-    split_2 = timeslot_us * (540.0 / 577.0) if timeslot_us else 0.0
+    total_bits = 156.25
+    burst_data_end = timeslot_us * (61.0 / total_bits) if timeslot_us else 0.0
+    training_end = timeslot_us * (87.0 / total_bits) if timeslot_us else 0.0
     y_max = float(y.max()) if len(y) else 1.0
     ax.plot(x, y, color='#46C6FF', linewidth=1.8)
-    ax.axvspan(0, split_1, color='#123A5E', alpha=0.25)
-    ax.axvspan(split_1, split_2, color='#1B5D74', alpha=0.20)
-    ax.axvspan(split_2, timeslot_us, color='#2E4E6F', alpha=0.22)
-    ax.text(timeslot_us * 0.13, y_max * 0.96, 'BURST DATA', color='#AFC4E8', fontsize=8, fontweight='bold')
-    ax.text(timeslot_us * 0.62, y_max * 0.96, 'TRAINING SEQUENCE', color='#AFC4E8', fontsize=8, fontweight='bold')
-    ax.text(timeslot_us * 0.94, y_max * 0.96, 'GUARD', color='#AFC4E8', fontsize=8, fontweight='bold')
+    ax.axvspan(0, burst_data_end, color='#123A5E', alpha=0.25)
+    ax.axvspan(burst_data_end, training_end, color='#1B5D74', alpha=0.22)
+    ax.axvspan(training_end, timeslot_us, color='#2E4E6F', alpha=0.22)
+    ax.text(timeslot_us * 0.16, y_max * 0.96, 'DATA + TAIL', color='#AFC4E8', fontsize=8, fontweight='bold')
+    ax.text(timeslot_us * 0.48, y_max * 0.96, 'TRAINING (26 bits)', color='#AFC4E8', fontsize=8, fontweight='bold')
+    ax.text(timeslot_us * 0.82, y_max * 0.96, 'DATA + GUARD', color='#AFC4E8', fontsize=8, fontweight='bold')
     ax.set_title(f'ANÁLISIS TEMPORAL DE LA VARIACIÓN DE SEÑAL ({timeslot_us:.0f} µs)', loc='left', fontsize=13, fontweight='bold')
     ax.set_xlabel('TIME (µs)')
     ax.set_ylabel('AMP. NORM.')
@@ -48,10 +49,14 @@ def figure_noise(df: pd.DataFrame):
     fig, ax = plt.subplots(figsize=(7.0, 3.6))
     _dark_axes(fig, ax)
     ax.plot(df['rbw_khz'], df['noise_floor_dbm'], color='#46C6FF', marker='o', linewidth=2)
+    if 'danl_dbm' in df:
+        ax.plot(df['rbw_khz'], df['danl_dbm'], color='#FFD166', marker='s', linewidth=1.6)
     ax.set_xscale('log')
     ax.set_title('ANÁLISIS DE ESPECTRO Y RUIDO', loc='left', fontsize=13, fontweight='bold')
     ax.set_xlabel('RBW (kHz)')
-    ax.set_ylabel('NOISE FLOOR (dBm)')
+    ax.set_ylabel('Nivel (dBm)')
+    if 'danl_dbm' in df:
+        ax.legend(['Ruido térmico + NF', 'DANL corregido'], facecolor='#0E1B2E', edgecolor='#2D4060', labelcolor='#DDE9FF')
     return fig
 
 
@@ -131,8 +136,22 @@ def figure_carrier_distribution(plan_df: pd.DataFrame, logical_df: pd.DataFrame,
     ax.bar(cells, tch_vals, bottom=bcch_vals, label='TCH', color='#278DFF')
     ax.set_title(f'DISTRIBUCIÓN DE PORTADORAS ({total_carriers} CH)', loc='left', fontsize=12, fontweight='bold')
     ax.set_xlabel('Cell ID')
-    ax.set_ylabel('Número de canales')
+    ax.set_ylabel('Número de portadoras')
     ax.legend(facecolor='#0E1B2E', edgecolor='#2D4060', labelcolor='#DDE9FF')
+    return fig
+
+
+def figure_cochannel_interference(plan_df: pd.DataFrame):
+    fig, ax = plt.subplots(figsize=(6.3, 3.3))
+    _dark_axes(fig, ax)
+    cells = plan_df['cell'].tolist()
+    ci_db = plan_df['cochannel_ci_db'].to_numpy()
+    ax.bar(cells, ci_db, color='#46C6FF')
+    ax.axhline(9.0, color='#FFD166', linestyle='--', linewidth=1.3)
+    ax.set_title('RELACIÓN C/I POR REUTILIZACIÓN', loc='left', fontsize=12, fontweight='bold')
+    ax.set_xlabel('Cell ID')
+    ax.set_ylabel('C/I (dB)')
+    ax.legend(['Umbral GSM 9 dB', 'C/I calculada'], facecolor='#0E1B2E', edgecolor='#2D4060', labelcolor='#DDE9FF')
     return fig
 
 
@@ -140,20 +159,26 @@ def figure_spectrum_from_arfcns(logical_df: pd.DataFrame):
     fig, ax = plt.subplots(figsize=(7.0, 3.6))
     _dark_axes(fig, ax)
 
-    # approximate GSM-900 uplink/downlink style visualization for didactic spectrum look
-    arfcns = logical_df['arfcn'].to_numpy()
-    freqs = 890.0 + arfcns * 0.2  # stylized, not standard-precise mapping for visualization only
-    x = np.linspace(freqs.min()-2, freqs.max()+2, 1400)
-    y = -105 + 1.5*np.sin(0.4*x)
-    for i, f in enumerate(freqs):
-        amp = -55 if i % 6 == 0 else -65 + (i % 4) * 2
-        y += (amp + 105) * np.exp(-0.5*((x-f)/0.09)**2)
-    ax.plot(x, y, color='#46C6FF', linewidth=1.4)
-    ax.fill_between(x, y, -110, color='#46C6FF', alpha=0.08)
-    ax.set_ylim(-110, -20)
-    ax.set_xlabel('Frequency (MHz)')
-    ax.set_ylabel('Power / Amplitude (dBm)')
-    ax.set_title('ESPECTRO GSM — DISTRIBUCIÓN Y CO-CANAL', loc='left', fontsize=12, fontweight='bold')
+    logical = logical_df.sort_values('uplink_frequency_mhz').copy()
+    logical['estimated_level_dbm'] = np.where(
+        logical['carrier_role'].str.contains('BCCH'),
+        -58.0,
+        -68.0 + (logical['arfcn'].to_numpy() % 4) * 1.8,
+    )
+    bcch = logical[logical['carrier_role'].str.contains('BCCH')]
+    tch = logical[logical['carrier_role'].str.contains('TCH')]
+
+    ax.vlines(tch['uplink_frequency_mhz'], -110, tch['estimated_level_dbm'], color='#46C6FF', linewidth=2.2, alpha=0.9)
+    ax.scatter(tch['uplink_frequency_mhz'], tch['estimated_level_dbm'], color='#46C6FF', s=26, zorder=3, label='TCH')
+    ax.vlines(bcch['uplink_frequency_mhz'], -110, bcch['estimated_level_dbm'], color='#FFD166', linewidth=2.6, alpha=0.95)
+    ax.scatter(bcch['uplink_frequency_mhz'], bcch['estimated_level_dbm'], color='#FFD166', s=36, zorder=4, label='BCCH')
+
+    ax.set_ylim(-110, -40)
+    ax.set_xlim(logical['uplink_frequency_mhz'].min() - 0.3, logical['uplink_frequency_mhz'].max() + 0.3)
+    ax.set_xlabel('Frecuencia uplink (MHz)')
+    ax.set_ylabel('Nivel estimado (dBm)')
+    ax.set_title('PORTADORAS UPLINK GSM POR ARFCN', loc='left', fontsize=12, fontweight='bold')
+    ax.legend(facecolor='#0E1B2E', edgecolor='#2D4060', labelcolor='#DDE9FF')
     return fig
 
 

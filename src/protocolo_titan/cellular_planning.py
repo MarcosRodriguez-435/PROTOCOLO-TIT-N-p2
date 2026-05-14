@@ -5,6 +5,9 @@ import pandas as pd
 from .config import CampScenario, GSMConfig
 
 
+GSM_MINIMUM_CI_DB = 9.0
+
+
 def carriers_per_cell(total_carriers: int, cluster_size: int) -> int:
     if total_carriers <= 0 or cluster_size <= 0:
         raise ValueError("total_carriers y cluster_size deben ser positivos.")
@@ -23,6 +26,34 @@ def reuse_distance_km(cell_radius_km: float, cluster_size: int) -> float:
     if cell_radius_km <= 0:
         raise ValueError("cell_radius_km debe ser positivo.")
     return cell_radius_km * reuse_ratio(cluster_size)
+
+
+def cochannel_interference_linear(
+    cluster_size: int,
+    path_loss_exponent: float = 4.0,
+    first_tier_interferers: int = 6,
+) -> float:
+    if path_loss_exponent <= 0:
+        raise ValueError("path_loss_exponent debe ser positivo.")
+    if first_tier_interferers <= 0:
+        raise ValueError("first_tier_interferers debe ser positivo.")
+    return (reuse_ratio(cluster_size) ** path_loss_exponent) / first_tier_interferers
+
+
+def cochannel_interference_db(
+    cluster_size: int,
+    path_loss_exponent: float = 4.0,
+    first_tier_interferers: int = 6,
+) -> float:
+    return 10.0 * math.log10(
+        cochannel_interference_linear(cluster_size, path_loss_exponent, first_tier_interferers)
+    )
+
+
+def gsm900_uplink_frequency_mhz(arfcn: int) -> float:
+    if arfcn <= 0:
+        raise ValueError("arfcn debe ser positivo para GSM-900.")
+    return 890.0 + 0.2 * arfcn
 
 
 def assign_arfcns(
@@ -65,6 +96,7 @@ def channel_logical_mapping(
                 {
                     "cell": cell,
                     "arfcn": arfcn,
+                    "uplink_frequency_mhz": gsm900_uplink_frequency_mhz(arfcn),
                     "carrier_role": "BCCH/CCCH control" if is_bcch else "TCH traffic",
                     "frequency_hopping_recommended": False if is_bcch else True,
                     "power_policy": "fixed/stable" if is_bcch else "adaptive if supported",
@@ -87,6 +119,8 @@ def frequency_planning_table(
     d = reuse_distance_km(scenario.cell_radius_km, scenario.cluster_size)
     d_over_r = reuse_ratio(scenario.cluster_size)
     per_cell = carriers_per_cell(scenario.total_carriers, scenario.cluster_size)
+    ci_linear = cochannel_interference_linear(scenario.cluster_size)
+    ci_db = cochannel_interference_db(scenario.cluster_size)
 
     rows = []
     for cell, arfcns in assignments.items():
@@ -102,6 +136,11 @@ def frequency_planning_table(
                 "arfcn_list": ", ".join(map(str, arfcns)),
                 "reuse_ratio_D_over_R": d_over_r,
                 "reuse_distance_km": d,
+                "first_tier_interferers": 6,
+                "path_loss_exponent": 4.0,
+                "cochannel_ci_linear": ci_linear,
+                "cochannel_ci_db": ci_db,
+                "ci_margin_vs_gsm_db": ci_db - GSM_MINIMUM_CI_DB,
             }
         )
 

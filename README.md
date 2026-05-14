@@ -138,11 +138,21 @@ D / R = sqrt(3N)
 D = R · sqrt(3N)
 ```
 
+### Relación co-canal aproximada
+
+```text
+C/I ≈ (D/R)^n / 6
+```
+
+Para el caso docente del campamento se usa `n = 4`, con contraste frente al umbral GSM orientativo de `9 dB`.
+
 ### Suelo de ruido instrumental
 
 ```text
 N(dBm) = -174 dBm/Hz + 10 log10(RBW) + NF
 ```
+
+Si se desea aproximar el `DANL` visualizado por el analizador, puede aplicarse además una corrección típica del detector logarítmico de `-2,51 dB`.
 
 ---
 
@@ -157,9 +167,11 @@ N(dBm) = -174 dBm/Hz + 10 log10(RBW) + NF
 | Timeslot GSM | 0,577 ms |
 | Portadoras por celda en N=4 | 6 |
 | Distancia de reutilización con R=1,5 km y N=4 | 5,20 km |
+| Relación co-canal con N=4 y n=4 | 13,80 dB |
 | Suelo de ruido con RBW=100 kHz y NF=6 dB | -118 dBm |
 | Suelo de ruido con RBW=10 kHz y NF=6 dB | -128 dBm |
 | Suelo de ruido con RBW=1 kHz y NF=6 dB | -138 dBm |
+| DANL aproximado con RBW=10 kHz y NF=6 dB | -130,51 dBm |
 
 ---
 

@@ -19,6 +19,7 @@ from protocolo_titan.ui_charts import (
     figure_noise,
     figure_cluster_map,
     figure_carrier_distribution,
+    figure_cochannel_interference,
     figure_spectrum_from_arfcns,
     figure_small_camera_placeholder,
 )
@@ -57,11 +58,18 @@ def inject_css():
         .mini-kpi .value { font-size:28px; font-weight:800; color:#59CCFF; line-height:1.1; margin-top:6px; }
         .mini-kpi .suffix { font-size:18px; color:#C9E9FF; }
         .smallbox { background:#102139; border:1px solid var(--border); border-radius:10px; padding:10px; margin-bottom:10px; }
+        .summary-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin: 0 0 14px 0; }
+        .summary-card { background:linear-gradient(180deg,#0B1829 0%, #11233B 100%); border:1px solid var(--border); border-radius:14px; padding:14px; min-height:118px; }
+        .summary-card .kicker { font-size:11px; color:#8FD9FF; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
+        .summary-card .big { font-size:28px; font-weight:800; color:#F2F7FF; line-height:1; margin-bottom:8px; }
+        .summary-card .desc { font-size:13px; color:#B8CAE6; line-height:1.45; }
+        .briefing { background:linear-gradient(90deg, rgba(255,209,102,0.08), rgba(101,231,255,0.08)); border:1px solid #35567B; border-radius:14px; padding:14px 16px; margin: 0 0 12px 0; color:#EAF4FF; }
         .sidebar-header { font-size: 24px; font-weight: 800; color: white; line-height:1.1; margin-bottom: 1rem; }
         .sidebar-caption { color:#AFC4E8; font-size:12px; text-transform:uppercase; letter-spacing:1px; }
         .stButton button { width:100%; border-radius:10px; border:1px solid #3A6089; background:#10213A; color:#EAF4FF; font-weight:700; }
         .stRadio > div { background:#081324; padding:8px; border-radius:12px; border:1px solid var(--border); }
         .stDataFrame, .stTable { border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+        @media (max-width: 900px) { .summary-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
         </style>
         """,
         unsafe_allow_html=True,
@@ -126,6 +134,24 @@ def metric_card(title: str, value: str, suffix: str = '', caption: str = ''):
     )
 
 
+def summary_cards(items: list[dict[str, str]]):
+    html = ['<div class="summary-grid">']
+    for item in items:
+        html.append(
+            "<div class=\"summary-card\">"
+            f"<div class=\"kicker\">{item['kicker']}</div>"
+            f"<div class=\"big\">{item['value']}</div>"
+            f"<div class=\"desc\">{item['desc']}</div>"
+            "</div>"
+        )
+    html.append('</div>')
+    st.markdown(''.join(html), unsafe_allow_html=True)
+
+
+def briefing(text: str):
+    st.markdown(f'<div class="briefing">{text}</div>', unsafe_allow_html=True)
+
+
 def render_scenario_a(gsm, convoy, camp, analyzer):
     mobility = analyze_convoy_mobility(convoy, gsm)
     fading_summary, traces = analyze_convoy_fading(convoy, gsm)
@@ -142,6 +168,35 @@ def render_scenario_a(gsm, convoy, camp, analyzer):
     )
     selected_row = mobility[mobility['speed_kmh'] == float(selected_speed)].iloc[0]
     selected_trace = traces[fading_trace_key('rician', float(selected_speed))]
+
+    summary_cards(
+        [
+            {
+                'kicker': 'Doppler',
+                'value': f"{selected_row['max_doppler_hz']:.2f} Hz",
+                'desc': f"Desplazamiento máximo a {int(selected_speed)} km/h en GSM-{gsm.carrier_frequency_hz / 1e6:.0f}.",
+            },
+            {
+                'kicker': 'Coherencia',
+                'value': f"{selected_row['coherence_time_ms']:.2f} ms",
+                'desc': 'Tiempo de invariancia del canal comparado con la ráfaga GSM.',
+            },
+            {
+                'kicker': 'Margen temporal',
+                'value': f"{selected_row['coherence_to_timeslot_ratio']:.2f}x",
+                'desc': 'Relación entre tiempo de coherencia y duración de timeslot.',
+            },
+            {
+                'kicker': 'Dictamen',
+                'value': selected_row['stability_class'],
+                'desc': 'Clasificación operativa del canal durante la transmisión.',
+            },
+        ]
+    )
+    briefing(
+        'Escenario A evalúa si la física del canal sigue siendo compatible con una ráfaga GSM de 577 µs. '
+        'La lectura correcta no es solo el Doppler absoluto, sino cuánto margen queda entre `T_c` y el timeslot.'
+    )
 
     c1, c2, c3 = st.columns([4, 4, 4])
     with c1:
@@ -207,12 +262,12 @@ def render_scenario_a(gsm, convoy, camp, analyzer):
             html = ['<div class="smallbox"><b>PISO DE RUIDO VS RBW</b><br><br>']
             for _, r in noise.iterrows():
                 html.append(
-                    f"{int(r['rbw_khz'])} kHz<span style='float:right;color:#8FD9FF'>{r['noise_floor_dbm']:.0f} dBm</span><br>"
+                    f"{int(r['rbw_khz'])} kHz<span style='float:right;color:#8FD9FF'>{r['noise_floor_dbm']:.2f} dBm</span><br>"
                 )
             html.append('</div>')
             st.markdown(''.join(html), unsafe_allow_html=True)
         with info2:
-            st.pyplot(figure_timeslot_signal(selected_trace), clear_figure=True, use_container_width=True)
+            st.pyplot(figure_noise(noise), clear_figure=True, use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
     with lower_right:
@@ -221,7 +276,7 @@ def render_scenario_a(gsm, convoy, camp, analyzer):
         with a:
             metric_card('Slot', f"{gsm.timeslot_duration_s * 1e6:.0f}", 'µs', 'Duración')
         with b:
-            metric_card('Desplaz.', f"{selected_row['max_doppler_hz'] / 1000:.2f}", 'kHz', 'Escala visual')
+            metric_card('Desplaz.', f"{selected_row['max_doppler_hz']:.2f}", 'Hz', 'Doppler máximo')
         with c:
             metric_card('Estabilidad', f"{min(selected_row['coherence_to_timeslot_ratio'] * 26.8, 99):.1f}", '%', 'Indicador heurístico')
         st.pyplot(figure_timeslot_signal(selected_trace), clear_figure=True, use_container_width=True)
@@ -239,6 +294,35 @@ def render_scenario_b(gsm, camp, analyzer):
     logical = results['logical_channels']
     noise = results['rbw_noise']
     checklist = results['red_checklist']
+
+    summary_cards(
+        [
+            {
+                'kicker': 'Reutilización',
+                'value': f"{float(plan['reuse_distance_km'].iloc[0]):.2f} km",
+                'desc': 'Separación co-canal resultante para el clúster configurado.',
+            },
+            {
+                'kicker': 'Relación D/R',
+                'value': f"{float(plan['reuse_ratio_D_over_R'].iloc[0]):.2f}",
+                'desc': 'Indicador geométrico de protección frente a interferencia co-canal.',
+            },
+            {
+                'kicker': 'C/I teórica',
+                'value': f"{float(plan['cochannel_ci_db'].iloc[0]):.2f} dB",
+                'desc': 'Modelo hexagonal aproximado con primer anillo de 6 interferentes.',
+            },
+            {
+                'kicker': 'DANL 10 kHz',
+                'value': f"{float(noise[noise['rbw_khz'] == 10.0]['danl_dbm'].iloc[0]):.2f} dBm",
+                'desc': 'Sensibilidad aproximada del analizador para una RBW de 10 kHz.',
+            },
+        ]
+    )
+    briefing(
+        'Escenario B combina planificación espectral y criterio de medida. La decisión clave es si el plan de 24 portadoras en N=4 mantiene '
+        'margen suficiente de `C/I` y si la RBW elegida permite distinguir señales débiles del ruido instrumental.'
+    )
 
     st.markdown(
         '<div class="panel" style="padding:16px 18px 10px 18px; margin-bottom:12px;"><div style="font-size:18px;font-weight:800;color:#F2F7FF;">Escenario B (Base Camp)</div><div class="subtle">Análisis técnico de topología de red y distribución de portadoras.</div></div>',
@@ -263,13 +347,14 @@ def render_scenario_b(gsm, camp, analyzer):
         reuse_distance = float(plan['reuse_distance_km'].iloc[0])
         metric_card('Distancia de reúso', f'{reuse_distance:.2f}', 'km', 'D = R √(3N)')
         metric_card('Relación D/R', f'{reuse_ratio:.2f}', '', 'Protección co-canal')
+        metric_card('C/I teórica', f"{float(plan['cochannel_ci_db'].iloc[0]):.2f}", 'dB', '1/6 · (D/R)^n, n=4')
         metric_card('Factor de reúso', f'1/{camp.cluster_size}', '', f'Clúster N = {camp.cluster_size}')
         st.markdown(
             f'<div class="panel-title" style="margin-top:12px;">Distribución de portadoras ({camp.total_carriers} CH)</div>',
             unsafe_allow_html=True,
         )
         st.pyplot(figure_carrier_distribution(plan, logical, camp.total_carriers), clear_figure=True, use_container_width=True)
-        st.dataframe(logical[['cell', 'arfcn', 'carrier_role']].head(8), use_container_width=True, hide_index=True)
+        st.dataframe(logical[['cell', 'arfcn', 'uplink_frequency_mhz', 'carrier_role']].head(8), use_container_width=True, hide_index=True)
         st.markdown('<div class="panel-title" style="margin-top:12px;">Cumplimiento y normativa</div>', unsafe_allow_html=True)
         st.markdown(
             '<div class="smallbox"><b>Directiva RED</b><span style="float:right;color:#8FD9FF;font-weight:800;">CHECKLIST</span><br><span class="subtle">Revisar evidencia técnica y conformidad aplicable</span></div>',
@@ -283,9 +368,13 @@ def render_scenario_b(gsm, camp, analyzer):
 
     bottom_left, bottom_right = st.columns([5, 5])
     with bottom_left:
-        st.markdown('<div class="panel"><div class="panel-title">Gestión de interferencias (SIR)</div>', unsafe_allow_html=True)
-        st.pyplot(figure_carrier_distribution(plan, logical, camp.total_carriers), clear_figure=True, use_container_width=True)
-        st.dataframe(plan[['cell', 'carriers_per_cell', 'arfcn_range', 'reuse_distance_km']], use_container_width=True, hide_index=True)
+        st.markdown('<div class="panel"><div class="panel-title">Gestión de interferencias (C/I)</div>', unsafe_allow_html=True)
+        st.pyplot(figure_cochannel_interference(plan), clear_figure=True, use_container_width=True)
+        st.dataframe(
+            plan[['cell', 'carriers_per_cell', 'arfcn_range', 'reuse_distance_km', 'cochannel_ci_db', 'ci_margin_vs_gsm_db']],
+            use_container_width=True,
+            hide_index=True,
+        )
         st.markdown('</div>', unsafe_allow_html=True)
 
     with bottom_right:

@@ -1,8 +1,14 @@
 import math
 
 from protocolo_titan.propagation import kmh_to_ms, max_doppler_hz, coherence_time_s
-from protocolo_titan.cellular_planning import carriers_per_cell, reuse_distance_km, reuse_ratio
-from protocolo_titan.instrumentation import analyzer_noise_floor_dbm, rbw_noise_table
+from protocolo_titan.cellular_planning import (
+    carriers_per_cell,
+    reuse_distance_km,
+    reuse_ratio,
+    cochannel_interference_db,
+    gsm900_uplink_frequency_mhz,
+)
+from protocolo_titan.instrumentation import analyzer_noise_floor_dbm, analyzer_danl_dbm, rbw_noise_table
 from protocolo_titan.config import GSMConfig, ConvoyScenario, CampScenario, AnalyzerConfig
 from protocolo_titan.scenario_a import analyze_convoy_mobility, analyze_convoy_fading, fading_trace_key
 from protocolo_titan.scenario_b import analyze_camp_base
@@ -38,6 +44,19 @@ def test_noise_floor():
     assert math.isclose(analyzer_noise_floor_dbm(100e3, 6), -118.0)
     assert math.isclose(analyzer_noise_floor_dbm(10e3, 6), -128.0)
     assert math.isclose(analyzer_noise_floor_dbm(1e3, 6), -138.0)
+
+
+def test_danl_floor_with_log_detector_correction():
+    assert math.isclose(analyzer_danl_dbm(100e3, 6), -120.51, rel_tol=1e-6)
+
+
+def test_gsm900_arfcn_frequency_mapping():
+    assert math.isclose(gsm900_uplink_frequency_mhz(1), 890.2)
+    assert math.isclose(gsm900_uplink_frequency_mhz(24), 894.8)
+
+
+def test_cochannel_ratio_for_cluster_four():
+    assert math.isclose(cochannel_interference_db(4), 13.8021124171, rel_tol=1e-6)
 
 
 def test_invalid_carrier_distribution_raises():
@@ -139,3 +158,5 @@ def test_build_markdown_report_includes_sections():
     assert '## Escenario A — Convoy de alta velocidad' in report
     assert '## Escenario B — Campamento base' in report
     assert '## Conclusión técnica' in report
+    assert 'C/I' in report
+    assert 'danl_dbm' in report
